@@ -17,10 +17,8 @@ type Props = {
   params: { id: string };
 };
 
-export default async function NewsDetailPage(props: Props) {
-  const { params } = props;
-  const awaitedParams = await params;
-  const { id } = awaitedParams;
+export default async function NewsDetailPage({ params }: Props) {
+  const { id } = params;
 
   const { data, error } = await supabase
     .from("news")
