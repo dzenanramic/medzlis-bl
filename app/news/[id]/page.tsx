@@ -12,14 +12,13 @@ type NewsItem = {
   date: string;
   additional_images?: string[];
 };
-
 type Props = {
-  params: { id: string } | Promise<{ id: string }>;
+  params: { id: string };
 };
 
 export default async function NewsDetailPage({ params }: Props) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  // Directly destructure id since params is always an object
+  const { id } = params;
 
   const { data, error } = await supabase
     .from("news")
