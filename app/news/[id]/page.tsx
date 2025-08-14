@@ -12,13 +12,15 @@ type NewsItem = {
   date: string;
   additional_images?: string[];
 };
+
+// Fixed: params is now always a Promise in Next.js 15+
 type Props = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default async function NewsDetailPage({ params }: Props) {
-  // Directly destructure id since params is always an object
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   const { data, error } = await supabase
     .from("news")
