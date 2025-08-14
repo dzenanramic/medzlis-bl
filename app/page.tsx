@@ -27,7 +27,14 @@ export default function Home() {
               src="/hero-mosque2.jpg"
               alt="Ferhadija"
               fill
-              className="object-cover object-bottom brightness-40"
+              className="hidden md:block object-cover object-bottom brightness-40"
+              priority
+            />
+            <Image
+              src="/hero-mosque-xs.jpeg"
+              alt="Ferhadija"
+              fill
+              className="md:hidden object-cover object-bottom brightness-40"
               priority
             />
           </div>
