@@ -14,11 +14,12 @@ type NewsItem = {
 };
 
 type Props = {
-  params: { id: string };
+  params: { id: string } | Promise<{ id: string }>;
 };
 
 export default async function NewsDetailPage({ params }: Props) {
-  const { id } = params;
+  const resolvedParams = await params;
+  const { id } = resolvedParams;
 
   const { data, error } = await supabase
     .from("news")
