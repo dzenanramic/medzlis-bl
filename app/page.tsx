@@ -3,7 +3,6 @@ import HeroSection from "@/components/HeroSection";
 import NewsSection from "@/components/NewsSection";
 import PrayerTimesSection from "@/components/PrayerTimesSection";
 import ContactSection from "@/components/ContactSection";
-import FooterSection from "@/components/FooterSection";
 
 export default function Home() {
   return (
@@ -12,7 +11,6 @@ export default function Home() {
       <NewsSection />
       <PrayerTimesSection />
       <ContactSection />
-      <FooterSection />
     </main>
   );
 }
