@@ -19,7 +19,9 @@ export default function Header() {
         <Link href="/contact" className="text-gray-700 hover:text-green-700">
           Kontakt
         </Link>
-        {/* Add more links as needed */}
+        <Link href="/mosques" className="text-gray-700 hover:text-green-700">
+          Džamije
+        </Link>
       </nav>
     </header>
   );
