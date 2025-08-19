@@ -6,6 +6,7 @@ export type MosqueItem = {
   image: string;
   image_old?: string;
   history?: string; // Added history field
+  facts?: { year: number; text: string }[]; // Added facts field
 };
 
 export const mosques: MosqueItem[] = [
