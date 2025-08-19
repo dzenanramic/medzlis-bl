@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+
 export default function FooterSection() {
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-black text-white py-12">
@@ -15,18 +18,22 @@ export default function FooterSection() {
           <div>
             <h4 className="font-semibold mb-4">Brzi linkovi</h4>
             <ul className="space-y-2 text-gray-400">
-              {["O nama", "Vjerske službe", "Edukacija", "Humanitarni rad"].map(
-                (link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="hover:text-green-400 transition-colors"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
+              {[
+                { label: "O nama", href: "/about-us" },
+                // { label: "Vjerske službe", href: "/vjerske-sluzbe" },
+                { label: "Vijesti", href: "/news" },
+                { label: "Humanitarni rad", href: "/humanitarian-work" },
+                { label: "Članarina", href: "/membership" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="hover:text-green-400 transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
           <div>
@@ -40,16 +47,36 @@ export default function FooterSection() {
           <div>
             <h4 className="font-semibold mb-4">Pratite nas</h4>
             <div className="flex space-x-4">
-              {["Facebook", "Instagram", "YouTube"].map((social) => (
-                <a
-                  key={social}
-                  href="#"
-                  className="bg-gray-800 hover:bg-green-600 p-2 rounded-full transition-colors"
-                >
-                  <span className="sr-only">{social}</span>
-                  <div className="w-5 h-5 bg-gray-400 rounded-full"></div>
-                </a>
-              ))}
+              <a
+                key="Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://www.facebook.com/profile.php?id=100079529330378"
+                className="bg-gray-800 hover:bg-blue-600 p-2 rounded-full transition-colors"
+                aria-label="Facebook"
+              >
+                <FaFacebook className="w-5 h-5" />
+              </a>
+              <a
+                key="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://www.instagram.com/medzlisbl/"
+                className="bg-gray-800 hover:bg-pink-500 p-2 rounded-full transition-colors"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="w-5 h-5" />
+              </a>
+              <a
+                key="YouTube"
+                target="_blank"
+                rel="noopener noreferrer"
+                href="https://www.youtube.com/@medzlisbl"
+                className="bg-gray-800 hover:bg-red-600 p-2 rounded-full transition-colors"
+                aria-label="YouTube"
+              >
+                <FaYoutube className="w-5 h-5" />
+              </a>
             </div>
           </div>
         </div>

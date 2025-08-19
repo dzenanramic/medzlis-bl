@@ -71,7 +71,7 @@ export default function AllNews() {
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="mt-0 mx-auto flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 text-lg h-auto"
+            className="mt-0 mx-auto flex items-center justify-center bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 text-lg h-auto"
             style={{
               lineHeight: "1.5",
               minHeight: "3rem",

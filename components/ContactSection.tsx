@@ -1,8 +1,13 @@
 export default function ContactSection() {
   const contacts = [
-    { label: "Telefon", value: "+387 51 123 456", icon: "📞" },
-    { label: "Email", value: "info@medzlis-bl.ba", icon: "✉️" },
-    { label: "Adresa", value: "Ferhadija 77, Banja Luka", icon: "📍" },
+    { label: "Telefon", value: "+387 51 211 840", icon: "📞" },
+    { label: "Telefon", value: "+387 51 462 241", icon: "📞" },
+    // { label: "Email", value: "info@medzlis-bl.ba", icon: "✉️" },
+    {
+      label: "Adresa",
+      value: "Kralja Petra I Karađorđevića, Banja Luka",
+      icon: "📍",
+    },
   ];
 
   return (
@@ -15,14 +20,23 @@ export default function ContactSection() {
             nam se!
           </p>
           <div className="space-y-6">
-            {contacts.map((contact) => (
-              <div key={contact.label} className="flex items-start">
+            {contacts.map((contact, index) => (
+              <div key={index} className="flex items-start">
                 <div className="bg-green-100 p-3 rounded-full mr-4 text-xl">
                   {contact.icon}
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">{contact.label}</h3>
-                  <p className="text-gray-600 mt-1">{contact.value}</p>
+                  {contact.label === "Telefon" ? (
+                    <a
+                      href={`tel:${contact.value.replace(/\s+/g, "")}`}
+                      className="text-gray-600 mt-1 block hover:underline"
+                    >
+                      {contact.value}
+                    </a>
+                  ) : (
+                    <p className="text-gray-600 mt-1">{contact.value}</p>
+                  )}
                 </div>
               </div>
             ))}
