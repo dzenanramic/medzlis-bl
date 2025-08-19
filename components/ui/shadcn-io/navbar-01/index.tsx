@@ -10,13 +10,9 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import Image, { ImageProps } from "next/image";
+import { AnimatePresence, motion } from "framer-motion"; // Add this if you use framer-motion (optional, for smooth animation)
 
 // Simple logo component for the navbar
 const Logo = (props: Omit<ImageProps, "src" | "alt" | "style">) => {
@@ -104,8 +100,11 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     ref
   ) => {
     const [isMobile, setIsMobile] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false); // NEW: state for mobile menu
     const containerRef = useRef<HTMLElement>(null);
     const pathname = usePathname();
+
+    const isHome = pathname === "/";
 
     useEffect(() => {
       const checkWidth = () => {
@@ -149,11 +148,17 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
           : pathname.startsWith(link.href) && link.href !== "/",
     }));
 
+    // Handler to close menu on link click or overlay click
+    const closeMenu = () => setMenuOpen(false);
+
     return (
       <header
         ref={combinedRef}
         className={cn(
-          "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 md:px-6 [&_*]:no-underline",
+          isHome
+            ? "bg-transparent border-b-0 absolute top-0 left-0 w-full"
+            : "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0",
+          "z-50 px-4 md:px-6 [&_*]:no-underline",
           className
         )}
         {...props}
@@ -165,7 +170,14 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
               href="/"
               className="flex items-center space-x-2 cursor-pointer"
             >
-              <div className="text-2xl font-bold text-green-700">{logo}</div>
+              <div
+                className={cn(
+                  "text-2xl font-bold",
+                  isHome ? "text-white" : "text-green-700"
+                )}
+              >
+                {logo}
+              </div>
             </Link>
           </div>
           {/* Right side: Navigation links and hamburger */}
@@ -178,17 +190,12 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                     <NavigationMenuItem key={index}>
                       <Link
                         href={link.href}
-                        // Old styling:
-                        // className={cn(
-                        //   "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
-                        //   link.active
-                        //     ? "bg-accent text-accent-foreground"
-                        //     : "text-foreground/80 hover:text-foreground"
-                        // )}
                         className={cn(
                           "font-medium hover:bg-green-700 hover:text-white transition-colors px-4 py-2 rounded-md",
                           link.active
                             ? "bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 text-white"
+                            : isHome
+                            ? "text-white"
                             : "text-foreground/80"
                         )}
                       >
@@ -201,45 +208,94 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
             )}
             {/* Mobile hamburger menu */}
             {isMobile && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className="group h-9 w-9 hover:bg-accent hover:text-accent-foreground"
-                    variant="ghost"
-                    size="icon"
-                  >
-                    <HamburgerIcon />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="end" className="w-48 p-2">
-                  <NavigationMenu className="max-w-none">
-                    <NavigationMenuList className="flex-col items-start gap-1">
-                      {linksWithActive.map((link, index) => (
-                        <NavigationMenuItem key={index} className="w-full">
-                          <Link
-                            href={link.href}
-                            // Old styling:
-                            // className={cn(
-                            //   "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
-                            //   link.active
-                            //     ? "bg-accent text-accent-foreground"
-                            //     : "text-foreground/80"
-                            // )}
-                            className={cn(
-                              "font-medium hover:bg-green-700 transition-colors px-4 py-2 rounded-md w-full",
-                              link.active
-                                ? "bg-green-600 text-white"
-                                : "text-foreground/80"
-                            )}
+              <>
+                <Button
+                  className={cn(
+                    "group h-9 w-9 hover:bg-accent hover:text-accent-foreground",
+                    isHome && "text-white"
+                  )}
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMenuOpen(true)}
+                  aria-label="Open menu"
+                >
+                  <HamburgerIcon className={isHome ? "text-white" : ""} />
+                </Button>
+                {/* Overlay */}
+                <AnimatePresence>
+                  {menuOpen && (
+                    <>
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.5 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-50 bg-black"
+                        onClick={closeMenu}
+                      />
+                      {/* Slide-in menu */}
+                      <motion.nav
+                        initial={{ x: "100%" }}
+                        animate={{ x: 0 }}
+                        exit={{ x: "100%" }}
+                        transition={{ type: "tween", duration: 0.3 }}
+                        className="fixed top-0 right-0 h-full w-72 max-w-full bg-white dark:bg-zinc-900 shadow-lg z-50 flex flex-col p-6"
+                        style={{
+                          borderTopLeftRadius: "1rem",
+                          borderBottomLeftRadius: "1rem",
+                        }}
+                      >
+                        <div className="flex justify-end mb-6">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={closeMenu}
+                            aria-label="Close menu"
                           >
-                            {link.label}
-                          </Link>
-                        </NavigationMenuItem>
-                      ))}
-                    </NavigationMenuList>
-                  </NavigationMenu>
-                </PopoverContent>
-              </Popover>
+                            <svg
+                              width={24}
+                              height={24}
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18" />
+                              <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                          </Button>
+                        </div>
+                        <NavigationMenu className="w-full">
+                          <NavigationMenuList className="flex-col items-start gap-2 w-full">
+                            {linksWithActive.map((link, index) => (
+                              <NavigationMenuItem
+                                key={index}
+                                className="w-full"
+                              >
+                                <Link
+                                  href={link.href}
+                                  className={cn(
+                                    "block font-medium transition-colors px-4 py-3 rounded-lg w-full text-lg",
+                                    link.active
+                                      ? "bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 text-white"
+                                      : isHome
+                                      ? "text-green-900 dark:text-white"
+                                      : "text-foreground/80 hover:bg-green-700 hover:text-white"
+                                  )}
+                                  onClick={closeMenu}
+                                >
+                                  {link.label}
+                                </Link>
+                              </NavigationMenuItem>
+                            ))}
+                          </NavigationMenuList>
+                        </NavigationMenu>
+                      </motion.nav>
+                    </>
+                  )}
+                </AnimatePresence>
+              </>
             )}
           </div>
         </div>
