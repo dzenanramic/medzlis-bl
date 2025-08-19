@@ -22,7 +22,8 @@ export default function NewsCard({ item, badgeText }: NewsCardProps) {
           src={item.image_url}
           alt={item.title}
           fill
-          className="object-cover w-full transition-transform duration-700 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover w-full transition-transform duration-700 group-hover:scale-110 brightness-[0.90]"
         />
         {badgeText && (
           <div className="absolute top-4 right-4 bg-green-600 text-white text-xs px-3 py-1 rounded-full shadow-md">
