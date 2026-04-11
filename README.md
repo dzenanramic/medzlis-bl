@@ -1,5 +1,23 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Environment Setup
+
+Copy `.env.example` to `.env.local` and fill in your Supabase project values:
+
+```bash
+cp .env.example .env.local
+```
+
+Required vars:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+Optional (admin uploads):
+
+- `NEXT_PUBLIC_SUPABASE_NEWS_IMAGE_BUCKET`
+- `NEXT_PUBLIC_SUPABASE_NEWS_FILE_BUCKET`
+
 ## Getting Started
 
 First, run the development server:

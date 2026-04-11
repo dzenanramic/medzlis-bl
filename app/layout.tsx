@@ -4,6 +4,7 @@ import "./globals.css";
 import FooterSection from "../components/FooterSection";
 import ConditionalHeader from "@/components/ConditionalHeader";
 import BackToTopButton from "@/components/BackToTopButton";
+import I18nProvider from "@/components/I18nProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Medžlis Islamske zajednice Banja Luka",
-  description: "Medžlis Islamske zajednice Banja Luka",
+  title: "Medžlis Islamske zajednice Berlin",
+  description: "Medžlis Islamske zajednice Berlin",
 };
 
 export default function RootLayout({
@@ -28,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-x-hidden`}
       >
-        <ConditionalHeader />
-        {children}
-        <BackToTopButton />
-        <FooterSection />
+        <I18nProvider>
+          <ConditionalHeader />
+          {children}
+          <BackToTopButton />
+          <FooterSection />
+        </I18nProvider>
       </body>
     </html>
   );

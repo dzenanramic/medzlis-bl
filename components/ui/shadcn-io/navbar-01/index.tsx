@@ -14,6 +14,8 @@ import { cn } from "@/lib/utils";
 import Image, { ImageProps } from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNextPrayer } from "@/hooks/useNextPrayer";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 // Simple logo component for the navbar
 const Logo = (props: Omit<ImageProps, "src" | "alt" | "style">) => {
@@ -52,21 +54,21 @@ const HamburgerIcon = ({
       d="M4 12L20 12"
       className={cn(
         "origin-center transition-all duration-300 ease-out",
-        isOpen ? "-translate-y-0 rotate-45" : "-translate-y-[7px] rotate-0"
+        isOpen ? "-translate-y-0 rotate-45" : "-translate-y-[7px] rotate-0",
       )}
     />
     <path
       d="M4 12H20"
       className={cn(
         "origin-center transition-all duration-300 ease-out",
-        isOpen ? "opacity-0 scale-0" : "opacity-100 scale-100"
+        isOpen ? "opacity-0 scale-0" : "opacity-100 scale-100",
       )}
     />
     <path
       d="M4 12H20"
       className={cn(
         "origin-center transition-all duration-300 ease-out",
-        isOpen ? "translate-y-0 -rotate-45" : "translate-y-[7px] rotate-0"
+        isOpen ? "translate-y-0 -rotate-45" : "translate-y-[7px] rotate-0",
       )}
     />
   </svg>
@@ -93,12 +95,20 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
 
 // Default navigation links
 const defaultNavigationLinks: Navbar01NavLink[] = [
-  { href: "/", label: "Početna" },
-  { href: "/news", label: "Vijesti" },
-  { href: "/membership", label: "Članarina" },
-  { href: "/mosques", label: "Džamije" },
-  { href: "/contact", label: "Kontakt" },
+  { href: "/", label: "" },
+  { href: "/about-us", label: "" },
+  { href: "/news", label: "" },
+  { href: "/membership", label: "" },
+  { href: "/contact", label: "" },
 ];
+
+const navLabelByHref: Record<string, string> = {
+  "/": "nav.home",
+  "/about-us": "nav.about",
+  "/news": "nav.news",
+  "/membership": "nav.membership",
+  "/contact": "nav.contact",
+};
 
 export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
   (
@@ -108,8 +118,9 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
       navigationLinks = defaultNavigationLinks,
       ...props
     },
-    ref
+    ref,
   ) => {
+    const { t } = useTranslation();
     const [isMobile, setIsMobile] = useState<boolean | null>(null); // Start with null to prevent flash
     const [menuOpen, setMenuOpen] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
@@ -150,20 +161,27 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
     }, [pathname]);
 
     useEffect(() => {
-      const checkWidth = () => {
-        // Use window width instead of container width for more reliable detection
-        const width = window.innerWidth;
-        setIsMobile(width < 768); // 768px is md breakpoint
+      const mediaQuery = window.matchMedia("(max-width: 767px)");
+
+      const handleViewportChange = () => {
+        setIsMobile(mediaQuery.matches);
       };
 
-      // Set initial value immediately
-      checkWidth();
+      // Set initial value immediately.
+      handleViewportChange();
 
-      // Add resize listener
-      window.addEventListener("resize", checkWidth);
+      // React to breakpoint transitions and viewport changes.
+      mediaQuery.addEventListener("change", handleViewportChange);
+      window.addEventListener("resize", handleViewportChange);
+      window.visualViewport?.addEventListener("resize", handleViewportChange);
 
       return () => {
-        window.removeEventListener("resize", checkWidth);
+        mediaQuery.removeEventListener("change", handleViewportChange);
+        window.removeEventListener("resize", handleViewportChange);
+        window.visualViewport?.removeEventListener(
+          "resize",
+          handleViewportChange,
+        );
       };
     }, []);
 
@@ -177,17 +195,22 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
           ref.current = node;
         }
       },
-      [ref]
+      [ref],
     );
 
     // Compute active links based on current pathname
-    const linksWithActive = navigationLinks.map((link) => ({
-      ...link,
-      active:
-        link.href === "/"
-          ? pathname === "/"
-          : pathname.startsWith(link.href) && link.href !== "/",
-    }));
+    const linksWithActive = navigationLinks.map((link) => {
+      const labelKey = navLabelByHref[link.href];
+
+      return {
+        ...link,
+        label: labelKey ? t(labelKey) : link.label,
+        active:
+          link.href === "/"
+            ? pathname === "/"
+            : pathname.startsWith(link.href) && link.href !== "/",
+      };
+    });
 
     // Handler to toggle menu
     const toggleMenu = () => setMenuOpen((prev) => !prev);
@@ -204,7 +227,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
               ? "bg-transparent border-b-0 absolute top-0 left-0 w-full"
               : "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0",
             "z-40 px-4 md:px-6 [&_*]:no-underline transition-colors duration-300",
-            className
+            className,
           )}
           {...props}
         >
@@ -218,7 +241,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 <div
                   className={cn(
                     "text-2xl font-bold transition-colors duration-300",
-                    isHome ? "text-white" : "text-green-700"
+                    isHome ? "text-white" : "text-green-700",
                   )}
                 >
                   {logo}
@@ -230,7 +253,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
             <div className="flex items-center gap-3 flex-1 justify-end">
               {/* Desktop navigation */}
               {isMobile === false && (
-                <NavigationMenu className="flex">
+                <NavigationMenu className="flex items-center gap-3">
                   <NavigationMenuList className="gap-1">
                     {linksWithActive.map((link, index) => (
                       <NavigationMenuItem key={index}>
@@ -241,8 +264,8 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                             link.active
                               ? "bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 text-white shadow-md"
                               : isHome
-                              ? "text-white hover:bg-white/10"
-                              : "text-foreground/80 hover:bg-green-700 hover:text-white"
+                                ? "text-white hover:bg-white/10"
+                                : "text-foreground/80 hover:bg-green-700 hover:text-white",
                           )}
                         >
                           {link.label}
@@ -250,6 +273,16 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                       </NavigationMenuItem>
                     ))}
                   </NavigationMenuList>
+                  <div
+                    className={cn(
+                      "flex h-8 items-center gap-2 px-3 rounded-lg text-sm font-medium shadow-sm",
+                      isHome
+                        ? "bg-white/20 text-white"
+                        : "bg-green-50 text-green-800",
+                    )}
+                  >
+                    <LanguageSwitcher embedded />
+                  </div>
                 </NavigationMenu>
               )}
 
@@ -261,13 +294,13 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                     menuOpen
                       ? "bg-white text-green-700 hover:bg-gray-100 shadow-lg"
                       : isHome
-                      ? "text-white hover:bg-white/10"
-                      : "hover:bg-accent hover:text-accent-foreground"
+                        ? "text-white hover:bg-white/10"
+                        : "hover:bg-accent hover:text-accent-foreground",
                   )}
                   variant="ghost"
                   size="icon"
                   onClick={toggleMenu}
-                  aria-label={menuOpen ? "Close menu" : "Open menu"}
+                  aria-label={menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}
                   aria-expanded={menuOpen}
                 >
                   <HamburgerIcon
@@ -281,14 +314,14 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
               {isMobile === false && nextPrayer && (
                 <div
                   className={cn(
-                    "ml-4 flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium shadow-sm",
+                    "ml-4 flex h-8 items-center gap-2 px-3 rounded-lg text-sm font-medium shadow-sm",
                     isHome
                       ? "bg-white/20 text-white"
-                      : "bg-green-50 text-green-800"
+                      : "bg-green-50 text-green-800",
                   )}
                 >
                   <span className="text-lg">{nextPrayer.icon}</span>
-                  <span>{nextPrayer.name}:</span>
+                  <span>{t(nextPrayer.key)}:</span>
                   <span className="font-bold">{nextPrayer.time}</span>
                 </div>
               )}
@@ -331,14 +364,14 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-zinc-700">
                   <div className="text-xl font-semibold text-green-700 dark:text-green-400">
-                    Menu
+                    {t("nav.menu")}
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={closeMenu}
                     className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800"
-                    aria-label="Close menu"
+                    aria-label={t("nav.closeMenu")}
                   >
                     <svg
                       width={10}
@@ -377,7 +410,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                             "block w-full font-medium transition-all duration-300 px-4 py-4 rounded-xl text-lg relative overflow-hidden group",
                             link.active
                               ? "bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 text-white shadow-lg"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 hover:pl-6"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 hover:pl-6",
                           )}
                           onClick={closeMenu}
                         >
@@ -391,16 +424,25 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                   </div>
                 </div>
 
+                <div
+                  className={cn(
+                    "mx-4 mt-2 mb-2 flex h-11 items-center gap-2 rounded-lg border px-3 text-base font-medium shadow-sm",
+                    "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700/40 dark:text-green-100",
+                  )}
+                >
+                  <LanguageSwitcher embedded className="w-full" />
+                </div>
+
                 {/* Next Prayer (mobile only, at the bottom) */}
                 {nextPrayer && (
                   <div
                     className={cn(
-                      "m-4 mb-0 flex items-center gap-2 px-3 py-2 rounded-lg text-base font-medium shadow-sm",
-                      "bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-100"
+                      "mx-4 mt-0 mb-6 flex h-11 items-center gap-2 rounded-lg border px-3 text-base font-medium shadow-sm",
+                      "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700/40 dark:text-green-100",
                     )}
                   >
                     <span className="text-xl">{nextPrayer.icon}</span>
-                    <span>{nextPrayer.name}:</span>
+                    <span>{t(nextPrayer.key)}:</span>
                     <span className="font-bold">{nextPrayer.time}</span>
                   </div>
                 )}
@@ -410,7 +452,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
         </AnimatePresence>
       </>
     );
-  }
+  },
 );
 
 Navbar01.displayName = "Navbar01";

@@ -1,22 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 export default function FooterSection() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-gradient-to-r from-gray-900 to-black text-white py-12">
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold mb-4 text-green-400">
-              Medžlis Banja Luka
+              Medžlis Berlin
             </h3>
             <p className="text-gray-400 leading-relaxed">
-              Centar islamske zajednice u Banja Luci. Promovišemo vrijednosti
-              islama i služimo zajednici.
+              {t("footer.description")}
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Brzi linkovi</h4>
+            <h4 className="font-semibold mb-4">{t("footer.quickLinks")}</h4>
             <ul className="space-y-2 text-gray-400">
               {[
                 { label: "O nama", href: "/about-us" },
@@ -37,7 +41,7 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Radno vrijeme</h4>
+            <h4 className="font-semibold mb-4">{t("footer.workingHours")}</h4>
             <ul className="space-y-2 text-gray-400">
               <li>Pon - Pet: 08h - 16h</li>
               <li>Sub: 09h - 13h</li>
@@ -45,7 +49,7 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Pratite nas</h4>
+            <h4 className="font-semibold mb-4">{t("footer.followUs")}</h4>
             <div className="flex space-x-4">
               <a
                 key="Facebook"
@@ -81,8 +85,8 @@ export default function FooterSection() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} Medžlis Islamske Zajednice Banja Luka.
-          Sva prava zadržana.
+          © {new Date().getFullYear()} Medžlis Islamske Zajednice Berlin.{" "}
+          {t("footer.rights")}
         </div>
       </div>
     </footer>

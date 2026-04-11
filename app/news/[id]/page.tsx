@@ -1,38 +1,73 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import AdditionalPhotos from "./AdditionalPhotos";
+import { normalizeNewsItem, DisplayNewsItem } from "@/lib/newsNormalize";
 
-type NewsItem = {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  image_url: string;
-  date: string;
-  additional_images?: string[];
-};
+const containsHtml = (value: string) => /<[^>]+>/.test(value);
 
-// Fixed: params is now always a Promise in Next.js 15+
-type Props = {
-  params: Promise<{ id: string }>;
-};
+export default function NewsDetailPage() {
+  const params = useParams<{ id: string }>();
+  const [news, setNews] = useState<DisplayNewsItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFoundState, setNotFoundState] = useState(false);
 
-export default async function NewsDetailPage({ params }: Props) {
-  const resolvedParams = await params;
-  const { id } = resolvedParams;
+  useEffect(() => {
+    const id = params?.id;
+    if (!id) return;
 
-  const { data, error } = await supabase
-    .from("news")
-    .select("*")
-    .eq("id", id)
-    .single();
+    const fetchNewsById = async () => {
+      setLoading(true);
+      setNotFoundState(false);
 
-  if (error || !data) {
-    notFound();
+      const { data, error } = await supabase
+        .from("news")
+        .select("id,title,summary,content,image_urls,file_url,created_at")
+        .eq("id", id)
+        .single();
+
+      const normalized = normalizeNewsItem(data);
+
+      if (error || !normalized) {
+        setNews(null);
+        setNotFoundState(true);
+      } else {
+        setNews(normalized);
+      }
+
+      setLoading(false);
+    };
+
+    fetchNewsById();
+  }, [params?.id]);
+
+  if (loading) {
+    return (
+      <section className="max-w-3xl mx-auto py-12 px-4 sm:px-6 animate-pulse">
+        <div className="mb-8">
+          <div className="h-10 w-3/4 rounded bg-gray-200 mb-4" />
+          <div className="h-4 w-40 rounded bg-gray-200" />
+        </div>
+        <div className="rounded-xl overflow-hidden shadow-lg mb-10">
+          <div className="w-full aspect-video bg-gray-200" />
+        </div>
+      </section>
+    );
   }
 
-  const news: NewsItem = data;
+  if (notFoundState || !news) {
+    return (
+      <section className="max-w-3xl mx-auto py-20 px-4 sm:px-6 text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-3">404</h1>
+        <p className="text-gray-600">Vijest nije pronađena.</p>
+      </section>
+    );
+  }
+
+  const hasHtmlContent = containsHtml(news.content);
 
   return (
     <section className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
@@ -79,14 +114,16 @@ export default async function NewsDetailPage({ params }: Props) {
       </div>
 
       {/* Content */}
-      <div
-        className="prose prose-lg max-w-none text-gray-700 
-                  prose-headings:font-semibold prose-headings:text-gray-900
-                  prose-a:text-blue-600 hover:prose-a:text-blue-800
-                  prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4
-                  prose-img:rounded-lg"
-        dangerouslySetInnerHTML={{ __html: news.content }}
-      />
+      {hasHtmlContent ? (
+        <div
+          className="max-w-none text-gray-700 leading-8 text-[1.04rem] [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-gray-900 [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-5 [&_blockquote]:border-l-4 [&_blockquote]:border-green-300 [&_blockquote]:pl-4 [&_a]:text-green-700 hover:[&_a]:text-green-800"
+          dangerouslySetInnerHTML={{ __html: news.content }}
+        />
+      ) : (
+        <div className="whitespace-pre-wrap break-words text-gray-700 leading-8 text-[1.04rem] rounded-xl border border-gray-100 bg-gray-50/60 p-5">
+          {news.content}
+        </div>
+      )}
 
       {/* Additional photos */}
       {Array.isArray(news.additional_images) &&

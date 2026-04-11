@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 import { usePrayerTimes } from "./usePrayerTimes";
 
 const PRAYER_NAMES = [
-  { name: "Zora", icon: "🌅" },
-  { name: "Sabah", icon: "🌄" },
-  { name: "Podne", icon: "☀️" },
-  { name: "Ikindija", icon: "⛅" },
-  { name: "Akšam", icon: "🌇" },
-  { name: "Jacija", icon: "🌙" },
+  { key: "prayers.names.fajrPrep", icon: "🌅" },
+  { key: "prayers.names.fajr", icon: "🌄" },
+  { key: "prayers.names.dhuhr", icon: "☀️" },
+  { key: "prayers.names.asr", icon: "⛅" },
+  { key: "prayers.names.maghrib", icon: "🌇" },
+  { key: "prayers.names.isha", icon: "🌙" },
 ];
 
 export function useNextPrayer() {
   const { prayerTimes } = usePrayerTimes();
   const [nextPrayer, setNextPrayer] = useState<{
-    name: string;
+    key: string;
     time: string;
     icon: string;
   } | null>(null);
@@ -28,7 +28,7 @@ export function useNextPrayer() {
       const prayerTime = new Date(today + "T" + prayerTimes[i] + ":00");
       if (now < prayerTime) {
         setNextPrayer({
-          name: PRAYER_NAMES[i].name,
+          key: PRAYER_NAMES[i].key,
           time: prayerTimes[i],
           icon: PRAYER_NAMES[i].icon,
         });
@@ -36,7 +36,7 @@ export function useNextPrayer() {
       }
     }
     setNextPrayer({
-      name: PRAYER_NAMES[0].name,
+      key: PRAYER_NAMES[0].key,
       time: prayerTimes[0],
       icon: PRAYER_NAMES[0].icon,
     });

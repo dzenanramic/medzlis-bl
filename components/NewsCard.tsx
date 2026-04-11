@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 type NewsItem = {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   content: string;
@@ -16,7 +16,7 @@ type NewsCardProps = {
 
 export default function NewsCard({ item, badgeText }: NewsCardProps) {
   return (
-    <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
+    <div className="group w-full bg-white rounded-2xl shadow-lg hover:shadow-2xl overflow-hidden border border-gray-100 transition-all duration-500 hover:-translate-y-2 h-full flex flex-col">
       <div className="relative h-60 overflow-hidden">
         <Image
           src={item.image_url}

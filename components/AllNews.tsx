@@ -3,23 +3,16 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import NewsCard from "./NewsCard";
 import Link from "next/link";
-
-type NewsItem = {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  image_url: string;
-  date: string;
-};
+import { DisplayNewsItem, normalizeNewsList } from "@/lib/newsNormalize";
 
 const PAGE_SIZE = 6;
 
 export default function AllNews() {
-  const [news, setNews] = useState<NewsItem[]>([]);
+  const [news, setNews] = useState<DisplayNewsItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [hasFetchError, setHasFetchError] = useState(false);
 
   useEffect(() => {
     fetchNews(1, true);
@@ -27,23 +20,32 @@ export default function AllNews() {
 
   const fetchNews = async (pageNumber: number, replace = false) => {
     setLoading(true);
+    setHasFetchError(false);
     const from = (pageNumber - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
     const { data, error } = await supabase
       .from("news")
       .select("*")
-      .order("date", { ascending: false })
+      .order("created_at", { ascending: false })
       .range(from, to);
 
-    if (error) {
-      console.error("Error fetching news:", error);
-    } else {
+    if (error || !data) {
+      setHasFetchError(true);
       if (replace) {
-        setNews(data);
-      } else {
-        setNews((prev) => [...prev, ...data]);
+        setNews([]);
       }
-      setHasMore(data.length === PAGE_SIZE);
+      setHasMore(false);
+    } else {
+      const normalized = normalizeNewsList(data);
+      const source = normalized;
+
+      if (replace) {
+        setNews(source);
+      } else {
+        setNews((prev) => [...prev, ...source]);
+      }
+
+      setHasMore(source.length === PAGE_SIZE);
     }
     setLoading(false);
   };
@@ -59,13 +61,30 @@ export default function AllNews() {
       <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
         Sve Vijesti
       </h1>
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
-        {news.map((item) => (
-          <Link key={item.id} href={`/news/${item.id}`} className="h-full flex">
-            <NewsCard item={item} />
-          </Link>
-        ))}
-      </div>
+      {hasFetchError && (
+        <p className="text-center text-sm text-red-600 mb-6">
+          Ne mozemo ucitati vijesti trenutno.
+        </p>
+      )}
+      {news.length > 0 ? (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 lg:items-stretch">
+          {news.map((item) => (
+            <Link
+              key={item.id}
+              href={`/news/${item.id}`}
+              className="h-full flex"
+            >
+              <NewsCard item={item} />
+            </Link>
+          ))}
+        </div>
+      ) : (
+        !loading && (
+          <p className="text-center text-gray-500">
+            Trenutno nema vijesti u bazi.
+          </p>
+        )
+      )}
       {hasMore && (
         <div className="flex justify-center mt-8">
           <button
