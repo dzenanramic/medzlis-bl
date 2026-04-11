@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import NewsCard from "./NewsCard";
 import Link from "next/link";
 import { DisplayNewsItem, normalizeNewsList } from "@/lib/newsNormalize";
@@ -19,11 +19,23 @@ export default function AllNews() {
   }, []);
 
   const fetchNews = async (pageNumber: number, replace = false) => {
+    if (!isSupabaseConfigured || !supabase) {
+      setHasFetchError(true);
+      if (replace) {
+        setNews([]);
+      }
+      setHasMore(false);
+      setLoading(false);
+      return;
+    }
+
+    const client = supabase;
+
     setLoading(true);
     setHasFetchError(false);
     const from = (pageNumber - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from("news")
       .select("*")
       .order("created_at", { ascending: false })

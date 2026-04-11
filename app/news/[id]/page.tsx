@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 import AdditionalPhotos from "./AdditionalPhotos";
@@ -19,11 +19,19 @@ export default function NewsDetailPage() {
     const id = params?.id;
     if (!id) return;
 
+    if (!isSupabaseConfigured || !supabase) {
+      setLoading(false);
+      setNotFoundState(true);
+      return;
+    }
+
+    const client = supabase;
+
     const fetchNewsById = async () => {
       setLoading(true);
       setNotFoundState(false);
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("news")
         .select("id,title,summary,content,image_urls,file_url,created_at")
         .eq("id", id)

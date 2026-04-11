@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 
 const IMAGE_BUCKET =
   process.env.NEXT_PUBLIC_SUPABASE_NEWS_IMAGE_BUCKET ?? "news-images";
@@ -54,10 +54,17 @@ export default function AdminPage() {
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setLoadingSession(false);
+      return;
+    }
+
+    const client = supabase;
+
     const fetchSession = async () => {
       const {
         data: { session: currentSession },
-      } = await supabase.auth.getSession();
+      } = await client.auth.getSession();
       setSession(currentSession ?? null);
       setLoadingSession(false);
     };
@@ -66,7 +73,7 @@ export default function AdminPage() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    } = client.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession ?? null);
     });
 
@@ -76,6 +83,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      return;
+    }
+
+    const client = supabase;
+
     const fetchNews = async () => {
       if (!session) {
         setNewsItems([]);
@@ -83,7 +96,7 @@ export default function AdminPage() {
       }
 
       setLoadingNews(true);
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("news")
         .select("id,title,created_at")
         .order("created_at", { ascending: false })
@@ -115,7 +128,16 @@ export default function AdminPage() {
     event.preventDefault();
     setAuthError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
+    if (!isSupabaseConfigured || !supabase) {
+      setAuthError(
+        "Supabase nije konfigurisan. Postavi NEXT_PUBLIC_SUPABASE_URL i NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+      return;
+    }
+
+    const client = supabase;
+
+    const { error } = await client.auth.signInWithPassword({
       email,
       password,
     });
@@ -126,15 +148,25 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    if (!supabase) return;
+    const client = supabase;
+    await client.auth.signOut();
   };
 
   const uploadFiles = async (files: File[], bucket: string, folder: string) => {
+    if (!supabase) {
+      throw new Error(
+        "Supabase nije konfigurisan. Postavi NEXT_PUBLIC_SUPABASE_URL i NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+    }
+
+    const client = supabase;
+
     const urls: string[] = [];
 
     for (const file of files) {
       const path = `${folder}/${buildUniqueFileName(file)}`;
-      const { error } = await supabase.storage.from(bucket).upload(path, file, {
+      const { error } = await client.storage.from(bucket).upload(path, file, {
         cacheControl: "3600",
         upsert: false,
       });
@@ -145,7 +177,7 @@ export default function AdminPage() {
         );
       }
 
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      const { data } = client.storage.from(bucket).getPublicUrl(path);
       urls.push(data.publicUrl);
     }
 
@@ -157,8 +189,16 @@ export default function AdminPage() {
     bucket: string,
     folder: string,
   ) => {
+    if (!supabase) {
+      throw new Error(
+        "Supabase nije konfigurisan. Postavi NEXT_PUBLIC_SUPABASE_URL i NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+    }
+
+    const client = supabase;
+
     const path = `${folder}/${buildUniqueFileName(file)}`;
-    const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    const { error } = await client.storage.from(bucket).upload(path, file, {
       cacheControl: "3600",
       upsert: false,
     });
@@ -169,7 +209,7 @@ export default function AdminPage() {
       );
     }
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    const { data } = client.storage.from(bucket).getPublicUrl(path);
     return data.publicUrl;
   };
 
@@ -232,6 +272,15 @@ export default function AdminPage() {
     event.preventDefault();
     if (!canSubmit) return;
 
+    if (!isSupabaseConfigured || !supabase) {
+      setStatus(
+        "Supabase nije konfigurisan. Postavi NEXT_PUBLIC_SUPABASE_URL i NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+      return;
+    }
+
+    const client = supabase;
+
     setIsSaving(true);
     setStatus(null);
 
@@ -260,7 +309,7 @@ export default function AdminPage() {
         author_id: session.user.id,
       };
 
-      const { error } = await supabase.from("news").insert(payload);
+      const { error } = await client.from("news").insert(payload);
 
       if (error) {
         throw new Error(error.message);
@@ -269,7 +318,7 @@ export default function AdminPage() {
       // Clear homepage news cache so the newly published item appears immediately.
       localStorage.removeItem("news_section_cache_v2");
 
-      const { data: insertedNews, error: refreshError } = await supabase
+      const { data: insertedNews, error: refreshError } = await client
         .from("news")
         .select("id,title,created_at")
         .order("created_at", { ascending: false })
@@ -297,6 +346,15 @@ export default function AdminPage() {
   };
 
   const handleDeleteNews = async (id: string) => {
+    if (!supabase) {
+      setStatus(
+        "Supabase nije konfigurisan. Postavi NEXT_PUBLIC_SUPABASE_URL i NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      );
+      return;
+    }
+
+    const client = supabase;
+
     const shouldDelete = window.confirm(
       "Da li sigurno zelis obrisati ovu vijest?",
     );
@@ -306,7 +364,7 @@ export default function AdminPage() {
     setStatus(null);
 
     try {
-      const { error } = await supabase.from("news").delete().eq("id", id);
+      const { error } = await client.from("news").delete().eq("id", id);
       if (error) {
         throw new Error(error.message);
       }
@@ -327,6 +385,20 @@ export default function AdminPage() {
     return (
       <main className="min-h-[70vh] grid place-items-center px-4">
         <p className="text-gray-600">Ucitavanje admin panela...</p>
+      </main>
+    );
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <main className="min-h-[70vh] grid place-items-center px-4 py-12">
+        <div className="w-full max-w-2xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900">
+          <h1 className="text-2xl font-bold mb-2">Admin panel</h1>
+          <p className="text-sm">
+            Nedostaju Supabase env varijable. Postavi NEXT_PUBLIC_SUPABASE_URL i
+            NEXT_PUBLIC_SUPABASE_ANON_KEY u .env.local, pa pokreni build ponovo.
+          </p>
+        </div>
       </main>
     );
   }

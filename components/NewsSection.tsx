@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import Link from "next/link";
 import NewsCard from "./NewsCard";
 import { useTranslation } from "react-i18next";
@@ -67,6 +67,15 @@ export default function NewsSection() {
 
   useEffect(() => {
     const fetchNews = async () => {
+      if (!isSupabaseConfigured || !supabase) {
+        setNews([]);
+        setHasFetchError(true);
+        setLoading(false);
+        return;
+      }
+
+      const client = supabase;
+
       setLoading(true);
       setHasFetchError(false);
 
@@ -78,7 +87,7 @@ export default function NewsSection() {
 
       // No valid cache, fetch from database
       try {
-        const { data, error } = await supabase
+        const { data, error } = await client
           .from("news")
           .select("*")
           .order("created_at", { ascending: false })
