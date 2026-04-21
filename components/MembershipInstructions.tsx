@@ -40,7 +40,7 @@ const MembershipInstructions: React.FC = () => (
               ISLAMSKA ZAJEDNICA U BOSNI I HERCEGOVINI
             </span>
             <span className="block text-gray-900 font-medium">
-              MEDŽLIS ISLAMSKE ZAJEDNICE BERLIN
+              DžEMAT LANDSBERG AM LECH
             </span>
           </div>
           <div>
@@ -66,7 +66,9 @@ const MembershipInstructions: React.FC = () => (
             <span className="block text-gray-900">
               UL. KRALJA P. I KARAĐORĐEVIĆA 46
             </span>
-            <span className="block text-gray-900">BERLIN, GERMANY</span>
+            <span className="block text-gray-900">
+              LANDSBERG AM LECH, GERMANY
+            </span>
           </div>
           <div>
             <span className="block text-xs text-gray-500 uppercase font-semibold tracking-wide">
@@ -75,7 +77,9 @@ const MembershipInstructions: React.FC = () => (
             <span className="block text-gray-900">
               UL. KRALJA P. I KARAĐORĐEVIĆA 46
             </span>
-            <span className="block text-gray-900">BERLIN, GERMANY</span>
+            <span className="block text-gray-900">
+              LANDSBERG AM LECH, GERMANY
+            </span>
           </div>
           <div>
             <span className="block text-xs text-gray-500 uppercase font-semibold tracking-wide">
@@ -129,7 +133,7 @@ const MembershipInstructions: React.FC = () => (
               Web stranica:
             </span>
             <a
-              href="https://www.medzlis-berlin.de"
+              href="https://www.dzemat-landsberg-am-lech.de"
               target="_blank"
               rel="noopener noreferrer"
               className="text-green-700 hover:text-green-900 font-medium inline-flex items-center transition-colors"
@@ -148,7 +152,7 @@ const MembershipInstructions: React.FC = () => (
                   d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
                 />
               </svg>
-              www.medzlis-berlin.de
+              www.dzemat-landsberg-am-lech.de
             </a>
           </div>
         </div>
@@ -182,7 +186,7 @@ const MembershipInstructions: React.FC = () => (
               Nosilac računa:
             </span>
             <span className="block text-gray-900 font-medium">
-              MEDŽLIS ISLAMSKE ZAJEDNICE BERLIN
+              DžEMAT LANDSBERG AM LECH
             </span>
           </div>
           <div>
@@ -283,12 +287,12 @@ const MembershipInstructions: React.FC = () => (
                   </td>
                   <td className="p-2">
                     <span className="block font-medium">
-                      MEDŽLIS ISLAMSKE ZAJEDNICE BERLIN
+                      DžEMAT LANDSBERG AM LECH
                     </span>
                     <span className="block">
                       KRALJA PETRA I KARAĐORĐEVIĆA 46
                     </span>
-                    <span className="block">BERLIN, GERMANY</span>
+                    <span className="block">LANDSBERG AM LECH, GERMANY</span>
                     <span className="block font-mono bg-gray-100 rounded px-1 mt-1">
                       IBAN: BA39141555541100288
                     </span>

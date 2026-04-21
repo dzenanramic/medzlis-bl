@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Medžlis Islamske zajednice Berlin",
-  description: "Medžlis Islamske zajednice Berlin",
+  title: "Džemat Landsberg am Lech",
+  description: "Džemat Landsberg am Lech",
 };
 
 export default function RootLayout({

@@ -21,7 +21,7 @@ import { useTranslation } from "react-i18next";
 const Logo = (props: Omit<ImageProps, "src" | "alt" | "style">) => {
   return (
     <Image
-      src="/logo.png" // Default local path
+      src="/ger-logo1.png" // Default local path
       alt="Logo"
       width={162}
       height={162}

@@ -38,9 +38,11 @@ export default function HeroSection() {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
       <div className="relative z-10 text-center px-4 max-w-4xl animate-fadeIn">
-        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 text-white drop-shadow-xl leading-tight">
-          {t("hero.title")}{" "}
-          <span className="text-green-400">{t("hero.city")}</span>
+        <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white drop-shadow-xl leading-tight">
+          <span className="block">{t("hero.title")}</span>
+          <span className="block text-green-400 mt-2 md:mt-3">
+            {t("hero.city")}
+          </span>
         </h1>
         <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
           {t("hero.subtitle")}

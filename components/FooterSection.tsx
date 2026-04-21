@@ -13,7 +13,7 @@ export default function FooterSection() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <h3 className="text-xl font-bold mb-4 text-green-400">
-              Medžlis Berlin
+              Džemat Landsberg am Lech
             </h3>
             <p className="text-gray-400 leading-relaxed">
               {t("footer.description")}
@@ -85,7 +85,7 @@ export default function FooterSection() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
-          © {new Date().getFullYear()} Medžlis Islamske Zajednice Berlin.{" "}
+          © {new Date().getFullYear()} Džemat Landsberg am Lech.{" "}
           {t("footer.rights")}
         </div>
       </div>

@@ -19,16 +19,16 @@ export const resources = {
         german: "Njemački",
       },
       hero: {
-        title: "Medžlis Islamske Zajednice",
-        city: "Berlin",
+        title: "Islamska zajednica Bošnjaka u Njemačkoj",
+        city: "Džemat Landsberg am Lech",
         subtitle:
           "Dobrodošli na zvaničnu stranicu — informacije, događaji i aktivnosti naše zajednice.",
       },
       about: {
-        badge: "Medžlis Berlin",
+        badge: "Džemat Landsberg am Lech",
         title: "Zajednica koja povezuje ljude i vrijednosti",
         description:
-          "Medžlis Berlin je mjesto susreta, duhovnog razvoja i podrške porodicama kroz vjerske, edukativne i društveno korisne aktivnosti.",
+          "Džemat Landsberg am Lech je mjesto susreta, duhovnog razvoja i podrške porodicama kroz vjerske, edukativne i društveno korisne aktivnosti.",
         cta: "Saznajte više",
         valuesTitle: "Naši prioriteti",
         values: {
@@ -49,7 +49,8 @@ export const resources = {
       },
       prayers: {
         title: "Vremena Namaza",
-        description: "Trenutna vremena obavljanja dnevnih namaza za Berlin",
+        description:
+          "Trenutna vremena obavljanja dnevnih namaza za Landsberg am Lech",
         loading: "Učitavanje...",
         footnote: "* Vremena se mijenjaju tokom godine",
         names: {
@@ -81,7 +82,7 @@ export const resources = {
       },
       footer: {
         description:
-          "Centar islamske zajednice u Berlinu. Promovišemo vrijednosti islama i služimo zajednici.",
+          "Centar islamske zajednice u Landsberg am Lechu. Promovišemo vrijednosti islama i služimo zajednici.",
         quickLinks: "Brzi linkovi",
         workingHours: "Radno vrijeme",
         followUs: "Pratite nas",
@@ -107,16 +108,16 @@ export const resources = {
         german: "Deutsch",
       },
       hero: {
-        title: "Madschlis der Islamischen Gemeinschaft",
-        city: "Berlin",
+        title: "Islamische Gemeinschaft der Bosniaken in Deutschland",
+        city: "Gemeinde Landsberg am Lech",
         subtitle:
           "Willkommen auf der offiziellen Seite — Informationen, Veranstaltungen und Aktivitäten unserer Gemeinschaft.",
       },
       about: {
-        badge: "Madschlis Berlin",
+        badge: "Gemeinde Landsberg am Lech",
         title: "Eine Gemeinschaft, die Menschen und Werte verbindet",
         description:
-          "Der Madschlis Berlin ist ein Ort der Begegnung, spirituellen Entwicklung und Unterstützung von Familien durch religiöse, bildungsbezogene und gesellschaftlich nützliche Aktivitäten.",
+          "Die Gemeinde Landsberg am Lech ist ein Ort der Begegnung, spirituellen Entwicklung und Unterstützung von Familien durch religiöse, bildungsbezogene und gesellschaftlich nützliche Aktivitäten.",
         cta: "Mehr erfahren",
         valuesTitle: "Unsere Schwerpunkte",
         values: {
@@ -137,7 +138,7 @@ export const resources = {
       },
       prayers: {
         title: "Gebetszeiten",
-        description: "Aktuelle tägliche Gebetszeiten für Berlin",
+        description: "Aktuelle tägliche Gebetszeiten für Landsberg am Lech",
         loading: "Lädt...",
         footnote: "* Die Zeiten ändern sich im Laufe des Jahres",
         names: {
@@ -170,7 +171,7 @@ export const resources = {
       },
       footer: {
         description:
-          "Zentrum der islamischen Gemeinschaft in Berlin. Wir fördern islamische Werte und dienen der Gemeinschaft.",
+          "Zentrum der islamischen Gemeinschaft in Landsberg am Lech. Wir fördern islamische Werte und dienen der Gemeinschaft.",
         quickLinks: "Schnelllinks",
         workingHours: "Arbeitszeiten",
         followUs: "Folgen Sie uns",
