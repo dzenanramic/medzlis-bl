@@ -18,22 +18,22 @@ export default function AboutSection({ compact = false }: AboutSectionProps) {
           : "py-20 pb-10 px-4 max-w-7xl mx-auto"
       }
     >
-      <div className="rounded-3xl bg-gradient-to-br from-emerald-900 via-green-800 to-emerald-700 p-6 text-white shadow-xl md:p-10">
+      <div className="rounded-lg bg-emerald-800 p-6 text-white shadow-md md:p-10">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr] md:items-center">
           <div>
-            <p className="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase">
+            <p className="mb-3 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide uppercase">
               {t("about.badge")}
             </p>
-            <h2 className="text-3xl font-bold leading-tight md:text-4xl">
+            <h2 className="text-3xl font-semibold tracking-tight leading-tight md:text-4xl">
               {t("about.title")}
             </h2>
-            <p className="mt-4 text-green-50 leading-relaxed md:text-lg">
+            <p className="mt-4 text-emerald-50 leading-relaxed md:text-lg">
               {t("about.description")}
             </p>
             {!compact && (
               <Link
                 href="/about-us"
-                className="mt-6 inline-flex rounded-xl bg-white px-5 py-2.5 font-semibold text-green-900 transition hover:bg-green-50"
+                className="mt-6 inline-flex rounded-lg bg-white px-5 py-2.5 font-semibold text-emerald-900 transition hover:bg-emerald-50"
               >
                 {t("about.cta")}
               </Link>

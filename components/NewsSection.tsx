@@ -148,10 +148,10 @@ export default function NewsSection() {
   return (
     <section className="py-20 px-4 max-w-7xl mx-auto">
       <div className="text-center mb-16">
-        <h2 className="text-4xl font-bold mb-3 text-gray-900">
+        <h2 className="text-3xl font-semibold tracking-tight mb-3 text-foreground">
           {t("news.latestTitle")}
         </h2>
-        <p className="text-gray-600 max-w-xl mx-auto mt-4">
+        <p className="text-muted-foreground max-w-xl mx-auto mt-4">
           {t("news.latestDescription")}
         </p>
         {hasFetchError && (
@@ -174,13 +174,14 @@ export default function NewsSection() {
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500">Nema dostupnih vijesti.</p>
+        <p className="text-center text-muted-foreground">
+          Nema dostupnih vijesti.
+        </p>
       )}
 
       <Link
         href="/news"
-        className="mt-10 mx-auto flex items-center justify-center bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 text-lg h-auto"
-        style={{ lineHeight: "1.5", minHeight: "3rem", width: "fit-content" }}
+        className="mt-10 mx-auto flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-lg shadow-sm transition-all duration-300 text-base w-fit"
       >
         {t("news.showMore")}
       </Link>

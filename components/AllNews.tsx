@@ -70,7 +70,7 @@ export default function AllNews() {
 
   return (
     <section className="py-10 px-2 max-w-6xl mx-auto">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">
+      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-8 text-center">
         Sve Vijesti
       </h1>
       {hasFetchError && (
@@ -102,12 +102,7 @@ export default function AllNews() {
           <button
             onClick={handleLoadMore}
             disabled={loading}
-            className="mt-0 mx-auto flex items-center justify-center bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 hover:bg-green-700 text-white font-semibold px-8 py-3 rounded-full shadow-lg transition-all duration-300 text-lg h-auto"
-            style={{
-              lineHeight: "1.5",
-              minHeight: "3rem",
-              width: "fit-content",
-            }}
+            className="mx-auto flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-lg shadow-sm transition-all duration-300 text-base w-fit"
           >
             {loading ? "Učitavanje..." : "Učitaj još"}
           </button>

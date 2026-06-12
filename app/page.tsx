@@ -7,7 +7,7 @@ import ContactSection from "@/components/ContactSection";
 
 export default function Home() {
   return (
-    <main className="bg-gradient-to-br from-white to-gray-50 text-gray-800 font-sans">
+    <main className="text-foreground font-sans">
       <HeroSection />
       <AboutSection />
       <NewsSection />

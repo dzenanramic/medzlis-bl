@@ -264,10 +264,10 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                           className={cn(
                             "font-medium transition-all duration-300 px-4 py-2 rounded-md relative overflow-hidden group",
                             link.active
-                              ? "bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 text-white shadow-md"
+                              ? "bg-emerald-700 text-white shadow-sm"
                               : isHome
                                 ? "text-white hover:bg-white/10"
-                                : "text-foreground/80 hover:bg-green-700 hover:text-white",
+                                : "text-foreground/80 hover:bg-emerald-700 hover:text-white",
                           )}
                         >
                           {link.label}
@@ -280,7 +280,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                       "flex h-8 items-center gap-2 px-3 rounded-lg text-sm font-medium shadow-sm",
                       isHome
                         ? "bg-white/20 text-white"
-                        : "bg-green-50 text-green-800",
+                        : "bg-emerald-50 text-emerald-800",
                     )}
                   >
                     <LanguageSwitcher embedded />
@@ -319,7 +319,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                     "ml-4 flex h-8 items-center gap-2 px-3 rounded-lg text-sm font-medium shadow-sm",
                     isHome
                       ? "bg-white/20 text-white"
-                      : "bg-green-50 text-green-800",
+                      : "bg-emerald-50 text-emerald-800",
                   )}
                 >
                   <span className="text-lg">{nextPrayer.icon}</span>
@@ -365,7 +365,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
               >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-zinc-700">
-                  <div className="text-xl font-semibold text-green-700 dark:text-green-400">
+                  <div className="text-xl font-semibold text-emerald-700 dark:text-emerald-400">
                     {t("nav.menu")}
                   </div>
                   <Button
@@ -411,14 +411,14 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                           className={cn(
                             "block w-full font-medium transition-all duration-300 px-4 py-4 rounded-xl text-lg relative overflow-hidden group",
                             link.active
-                              ? "bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 text-white shadow-lg"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 hover:pl-6",
+                              ? "bg-emerald-700 text-white shadow-sm"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-700 dark:hover:text-emerald-400 hover:pl-6",
                           )}
                           onClick={closeMenu}
                         >
                           <span className="relative z-10">{link.label}</span>
                           {!link.active && (
-                            <div className="absolute inset-0 bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute inset-0 bg-emerald-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                           )}
                         </Link>
                       </motion.div>
@@ -429,7 +429,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                 <div
                   className={cn(
                     "mx-4 mt-2 mb-2 flex h-11 items-center gap-2 rounded-lg border px-3 text-base font-medium shadow-sm",
-                    "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700/40 dark:text-green-100",
+                    "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/30 dark:border-emerald-700/40 dark:text-emerald-100",
                   )}
                 >
                   <LanguageSwitcher embedded className="w-full" />
@@ -440,7 +440,7 @@ export const Navbar01 = React.forwardRef<HTMLElement, Navbar01Props>(
                   <div
                     className={cn(
                       "mx-4 mt-0 mb-6 flex h-11 items-center gap-2 rounded-lg border px-3 text-base font-medium shadow-sm",
-                      "bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700/40 dark:text-green-100",
+                      "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/30 dark:border-emerald-700/40 dark:text-emerald-100",
                     )}
                   >
                     <span className="text-xl">{nextPrayer.icon}</span>

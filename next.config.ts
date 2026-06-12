@@ -6,6 +6,9 @@ const supabaseHostname = supabaseUrl
   : "vnjvmgbwumadrjxaxash.supabase.co";
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    root: process.cwd(),
+  },
   images: {
     remotePatterns: [
       {

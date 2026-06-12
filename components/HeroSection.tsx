@@ -13,7 +13,7 @@ export default function HeroSection() {
   }, []);
 
   return (
-    <section className="relative h-[85vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 transition-transform duration-[600ms] ease-out"
         style={{
@@ -38,9 +38,9 @@ export default function HeroSection() {
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
       <div className="relative z-10 text-center px-4 max-w-4xl animate-fadeIn">
-        <h1 className="text-3xl md:text-5xl font-extrabold mb-4 text-white drop-shadow-xl leading-tight">
+        <h1 className="text-3xl md:text-5xl font-semibold tracking-tight mb-4 text-white drop-shadow-md leading-tight">
           <span className="block">{t("hero.title")}</span>
-          <span className="block text-green-400 mt-2 md:mt-3">
+          <span className="block text-emerald-300 mt-2 md:mt-3">
             {t("hero.city")}
           </span>
         </h1>

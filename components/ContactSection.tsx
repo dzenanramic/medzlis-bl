@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Phone, MapPin } from "lucide-react";
 
 type ContactFormState = {
   name: string;
@@ -27,17 +28,17 @@ export default function ContactSection() {
       {
         label: t("contact.labels.phone"),
         value: "+387 51 211 840",
-        icon: "📞",
+        icon: Phone,
       },
       {
         label: t("contact.labels.phone"),
         value: "+387 51 462 241",
-        icon: "📞",
+        icon: Phone,
       },
       {
         label: t("contact.labels.address"),
         value: "Landsberg am Lech, Germany",
-        icon: "📍",
+        icon: MapPin,
       },
     ],
     [t],
@@ -73,39 +74,45 @@ export default function ContactSection() {
     <section id="contact" className="py-14 md:py-20 px-4 max-w-7xl mx-auto">
       <div className="grid md:grid-cols-2 gap-12 items-start">
         <div>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6">
+          <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-4 md:mb-6">
             {t("contact.title")}
           </h2>
-          <p className="text-gray-600 mb-6 md:mb-8 text-base md:text-lg">
+          <p className="text-muted-foreground mb-6 md:mb-8 text-base md:text-lg">
             {t("contact.description")}
           </p>
 
-          <div className="space-y-4 mb-6 md:mb-8 rounded-2xl border border-gray-200 bg-white p-4 md:p-6 shadow-sm">
-            {contacts.map((contact, index) => (
-              <div key={index} className="flex items-start">
-                <div className="bg-green-100 p-2.5 rounded-full mr-3 text-lg md:text-xl">
-                  {contact.icon}
+          <div className="space-y-4 mb-6 md:mb-8 rounded-lg border border-border bg-card p-5 shadow-sm">
+            {contacts.map((contact, index) => {
+              const Icon = contact.icon;
+              return (
+                <div key={index} className="flex items-start gap-3">
+                  <Icon
+                    className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0"
+                    strokeWidth={1.5}
+                  />
+                  <div>
+                    <h3 className="font-semibold text-base md:text-lg">
+                      {contact.label}
+                    </h3>
+                    {contact.label === t("contact.labels.phone") ? (
+                      <a
+                        href={`tel:${contact.value.replace(/\s+/g, "")}`}
+                        className="text-muted-foreground mt-1 block hover:underline"
+                      >
+                        {contact.value}
+                      </a>
+                    ) : (
+                      <p className="text-muted-foreground mt-1">
+                        {contact.value}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-base md:text-lg">
-                    {contact.label}
-                  </h3>
-                  {contact.label === t("contact.labels.phone") ? (
-                    <a
-                      href={`tel:${contact.value.replace(/\s+/g, "")}`}
-                      className="text-gray-600 mt-1 block hover:underline"
-                    >
-                      {contact.value}
-                    </a>
-                  ) : (
-                    <p className="text-gray-600 mt-1">{contact.value}</p>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 h-72 md:h-96">
+          <div className="rounded-lg overflow-hidden shadow-sm border border-border h-72 md:h-96">
             <iframe
               src="https://www.google.com/maps?q=Landsberg%20am%20Lech&output=embed"
               className="h-full w-full"
@@ -119,15 +126,15 @@ export default function ContactSection() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-gray-200 bg-white p-5 shadow-lg md:p-8"
+          className="rounded-lg border border-border bg-card p-6 shadow-sm"
         >
-          <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-5 md:mb-6">
+          <h3 className="text-xl md:text-2xl font-semibold text-foreground mb-5 md:mb-6">
             {t("contact.formTitle")}
           </h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t("contact.name")}
               </label>
               <input
@@ -139,12 +146,12 @@ export default function ContactSection() {
                     name: event.target.value,
                   }))
                 }
-                className="h-11 w-full rounded-lg border border-gray-300 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="h-11 w-full rounded-lg border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-shadow"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t("contact.email")}
               </label>
               <input
@@ -156,12 +163,12 @@ export default function ContactSection() {
                     email: event.target.value,
                   }))
                 }
-                className="h-11 w-full rounded-lg border border-gray-300 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="h-11 w-full rounded-lg border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-shadow"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t("contact.subject")}
               </label>
               <input
@@ -173,12 +180,12 @@ export default function ContactSection() {
                     subject: event.target.value,
                   }))
                 }
-                className="h-11 w-full rounded-lg border border-gray-300 px-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="h-11 w-full rounded-lg border border-input bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-shadow"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 {t("contact.message")}
               </label>
               <textarea
@@ -190,7 +197,7 @@ export default function ContactSection() {
                   }))
                 }
                 rows={5}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-shadow"
               />
             </div>
           </div>
@@ -198,7 +205,7 @@ export default function ContactSection() {
           {statusMessage && (
             <p
               className={`mt-4 text-sm ${
-                isError ? "text-red-600" : "text-green-700"
+                isError ? "text-red-600" : "text-emerald-700"
               }`}
             >
               {statusMessage}
@@ -208,7 +215,7 @@ export default function ContactSection() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="mt-6 h-11 w-full rounded-lg bg-gradient-to-r from-green-700 via-emerald-700 to-green-800 px-4 font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-6 h-11 w-full rounded-lg bg-emerald-700 px-4 font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSubmitting ? t("contact.sending") : t("contact.submit")}
           </button>
