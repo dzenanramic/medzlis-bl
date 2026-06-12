@@ -12,43 +12,66 @@ export function usePrayerTimes() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchPrayerTimes() {
       setLoading(true);
       setError(null);
 
-      const cacheKey = "prayerTimesCache";
+      const cacheKey = "prayerTimesAlAdhan";
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const { data, timestamp } = JSON.parse(cached);
         if (Date.now() - timestamp < 60 * 60 * 1000) {
-          setPrayerTimes(data.vakat);
-          setDate(data.datum?.[1] || null);
-          setLoading(false);
+          // 1 hour cache
+          if (!cancelled) {
+            setPrayerTimes(data.times);
+            setDate(data.readableDate ?? data.date);
+            setLoading(false);
+          }
           return;
         }
       }
 
       try {
-        const res = await fetch("https://api.vaktija.ba/vaktija/v1/1");
+        const res = await fetch("/api/prayer-times?method=3");
         if (!res.ok) throw new Error("Greška pri dohvatanju podataka");
-        const data = await res.json();
-        setPrayerTimes(data.vakat);
-        setDate(data.datum?.[1] || null);
+
+        const json = await res.json();
+        if (cancelled) return;
+
+        // Map AlAdhan response to the array format the component expects:
+        // [Fajr, Dhuhr, Asr, Maghrib, Isha]
+        const times = json.times.map((t: { time: string }) => t.time);
+
+        setPrayerTimes(times);
+        setDate(json.readableDate ?? json.date);
+
         localStorage.setItem(
           cacheKey,
-          JSON.stringify({ data, timestamp: Date.now() })
+          JSON.stringify({
+            data: { times, readableDate: json.readableDate, date: json.date },
+            timestamp: Date.now(),
+          }),
         );
       } catch (e: unknown) {
-        if (typeof e === "object" && e && "message" in e) {
-          setError((e as { message?: string }).message || "Nepoznata greška");
-        } else {
-          setError("Nepoznata greška");
+        if (!cancelled) {
+          if (typeof e === "object" && e && "message" in e) {
+            setError((e as { message?: string }).message || "Nepoznata greška");
+          } else {
+            setError("Nepoznata greška");
+          }
         }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
+
     fetchPrayerTimes();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return { prayerTimes, date, loading, error };

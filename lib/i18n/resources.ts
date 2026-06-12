@@ -8,6 +8,7 @@ export const resources = {
         about: "O nama",
         news: "Vijesti",
         membership: "Članarina",
+        donations: "Donacije",
         contact: "Kontakt",
         menu: "Meni",
         closeMenu: "Zatvori meni",
@@ -80,6 +81,30 @@ export const resources = {
           address: "Adresa",
         },
       },
+      membership: {
+        onlinePaymentTitle: "Online plaćanje (PayPal)",
+        onlinePaymentDesc:
+          "Brzo i sigurno plaćanje putem PayPal-a ili kreditne kartice. Nije potreban PayPal račun — možete platiti i kreditnom karticom.",
+        amountLabel: "Iznos članarine",
+        customAmount: "Drugi iznos",
+        payWithPayPal: "Plati PayPal-om",
+        paymentSuccessful:
+          "Uplata uspješna! Hvala na podršci. Potvrda je poslata na vaš email.",
+        paymentError: "Došlo je do greške pri obradi uplate. Pokušajte ponovo.",
+        paymentCancelled: "Plaćanje je otkazano.",
+        orBankTransfer: "Ili putem bankovnog transfera",
+        bankTransferInfo:
+          "Za uplate iz Bosne i Hercegovine i inostranstva, koristite bankovne instrukcije ispod.",
+      },
+      donations: {
+        title: "Donacije",
+        description:
+          "Podržite rad našeg džemata svojom donacijom. Svaka pomoć je dobrodošla.",
+        embedInstruction:
+          "Donacijski formular je obezbijeđen od strane iRaiser-a.",
+        embedPlaceholder:
+          "Donacijski formular će biti dostupan nakon što klijent završi podešavanje na iRaiser platformi.",
+      },
       footer: {
         description:
           "Centar islamske zajednice u Landsberg am Lechu. Promovišemo vrijednosti islama i služimo zajednici.",
@@ -97,6 +122,7 @@ export const resources = {
         about: "Über uns",
         news: "Nachrichten",
         membership: "Mitgliedschaft",
+        donations: "Spenden",
         contact: "Kontakt",
         menu: "Menü",
         closeMenu: "Menü schließen",
@@ -168,6 +194,28 @@ export const resources = {
           phone: "Telefon",
           address: "Adresse",
         },
+      },
+      membership: {
+        onlinePaymentTitle: "Online-Zahlung (PayPal)",
+        onlinePaymentDesc:
+          "Schnelle und sichere Zahlung per PayPal oder Kreditkarte. Kein PayPal-Konto erforderlich — Sie können auch mit Ihrer Kreditkarte zahlen.",
+        amountLabel: "Beitragsbetrag",
+        customAmount: "Anderer Betrag",
+        payWithPayPal: "Mit PayPal bezahlen",
+        paymentSuccessful:
+          "Zahlung erfolgreich! Vielen Dank für Ihre Unterstützung. Eine Bestätigung wurde an Ihre E-Mail gesendet.",
+        paymentError:
+          "Bei der Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        paymentCancelled: "Zahlung abgebrochen.",
+      },
+      donations: {
+        title: "Spenden",
+        description:
+          "Unterstützen Sie unsere Gemeinde mit Ihrer Spende. Jede Hilfe ist willkommen.",
+        embedInstruction:
+          "Das Spendenformular wird von iRaiser bereitgestellt.",
+        embedPlaceholder:
+          "Das Spendenformular wird verfügbar sein, sobald der Kunde die Einrichtung auf der iRaiser-Plattform abgeschlossen hat.",
       },
       footer: {
         description:

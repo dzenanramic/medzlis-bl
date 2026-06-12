@@ -2,7 +2,6 @@ import { usePrayerTimes } from "@/hooks/usePrayerTimes";
 import { useTranslation } from "react-i18next";
 
 const PRAYER_NAMES = [
-  { key: "prayers.names.fajrPrep", icon: "🌅" },
   { key: "prayers.names.fajr", icon: "🌄" },
   { key: "prayers.names.dhuhr", icon: "☀️" },
   { key: "prayers.names.asr", icon: "⛅" },
@@ -31,7 +30,7 @@ export default function PrayerTimesSection() {
         ) : error ? (
           <div className="text-center text-red-300">{error}</div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {PRAYER_NAMES.map((prayer, i) => (
               <div
                 key={prayer.key}

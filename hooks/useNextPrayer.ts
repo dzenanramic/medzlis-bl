@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { usePrayerTimes } from "./usePrayerTimes";
 
 const PRAYER_NAMES = [
-  { key: "prayers.names.fajrPrep", icon: "🌅" },
   { key: "prayers.names.fajr", icon: "🌄" },
   { key: "prayers.names.dhuhr", icon: "☀️" },
   { key: "prayers.names.asr", icon: "⛅" },
