@@ -166,7 +166,7 @@ export default function NewsSection() {
           {news.map((item) => (
             <Link
               key={item.id}
-              href={`/news/${item.id}`}
+              href={`/news/view?id=${item.id}`}
               className="block h-full w-full"
             >
               <NewsCard item={item} />

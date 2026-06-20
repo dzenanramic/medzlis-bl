@@ -6,17 +6,11 @@ const supabaseHostname = supabaseUrl
   : "vnjvmgbwumadrjxaxash.supabase.co";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: process.cwd(),
-  },
+  output: "export",
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: supabaseHostname,
-      },
-    ],
+    unoptimized: true,
   },
+  trailingSlash: true,
 };
 
 export default nextConfig;

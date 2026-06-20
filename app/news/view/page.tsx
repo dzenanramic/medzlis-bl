@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import AdditionalPhotos from "./AdditionalPhotos";
 import { normalizeNewsItem, DisplayNewsItem } from "@/lib/newsNormalize";
@@ -10,13 +10,13 @@ import { normalizeNewsItem, DisplayNewsItem } from "@/lib/newsNormalize";
 const containsHtml = (value: string) => /<[^>]+>/.test(value);
 
 export default function NewsDetailPage() {
-  const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const [news, setNews] = useState<DisplayNewsItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFoundState, setNotFoundState] = useState(false);
 
   useEffect(() => {
-    const id = params?.id;
     if (!id) return;
 
     if (!isSupabaseConfigured || !supabase) {
@@ -50,7 +50,7 @@ export default function NewsDetailPage() {
     };
 
     fetchNewsById();
-  }, [params?.id]);
+  }, [id]);
 
   if (loading) {
     return (

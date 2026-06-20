@@ -355,6 +355,14 @@ export default function AdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
 
+  // Edit
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null);
+  const [loadingEditData, setLoadingEditData] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const formRef = useRef<HTMLDivElement | null>(null);
+
   // Payments
   const [payments, setPayments] = useState<
     {
@@ -562,6 +570,23 @@ export default function AdminPage() {
     setContent("");
     setSelectedImages([]);
     setDocumentFile(null);
+    setExistingImageUrls([]);
+    setExistingFileUrl(null);
+  };
+
+  const handleCancelEdit = () => {
+    resetForm();
+    setEditingId(null);
+    setShowForm(false);
+  };
+
+  const handleAddNews = () => {
+    resetForm();
+    setEditingId(null);
+    setShowForm(true);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   const handleSubmit = async (event: FormEvent) => {
@@ -569,29 +594,62 @@ export default function AdminPage() {
     if (!canSubmit || !supabase || !session) return;
     setIsSaving(true);
     try {
-      const imageUrls =
+      // Upload new images if any
+      const newImageUrls =
         selectedImages.length > 0
           ? await uploadFiles(selectedImages, IMAGE_BUCKET, "news")
           : [];
+      // Merge existing + new images
+      const imageUrls = [...existingImageUrls, ...newImageUrls];
+
+      // Upload new document if provided, otherwise keep existing
       const fileUrl = documentFile
         ? await uploadSingleFile(documentFile, FILE_BUCKET, "news")
-        : null;
+        : existingFileUrl;
+
       const finalContent = (() => {
         let html = content.trim();
         if (fileUrl) {
-          html += `<h3>Dokument</h3><ul><li><a href="${fileUrl}" target="_blank" rel="noopener noreferrer">${documentFile?.name ?? "Dokument"}</a></li></ul>`;
+          const fileName =
+            documentFile?.name ??
+            existingFileUrl?.split("/").pop() ??
+            "Dokument";
+          // Only append doc link if it's not already in the content
+          if (!html.includes(fileUrl)) {
+            html += `<h3>Dokument</h3><ul><li><a href="${fileUrl}" target="_blank" rel="noopener noreferrer">${fileName}</a></li></ul>`;
+          }
         }
         return html;
       })();
-      const { error } = await supabase.from("news").insert({
-        title: title.trim(),
-        summary: summary.trim(),
-        content: finalContent,
-        image_urls: imageUrls,
-        file_url: fileUrl,
-        author_id: session.user.id,
-      });
-      if (error) throw new Error(error.message);
+
+      if (editingId) {
+        // ── UPDATE mode ──
+        const { error } = await supabase
+          .from("news")
+          .update({
+            title: title.trim(),
+            summary: summary.trim(),
+            content: finalContent,
+            image_urls: imageUrls,
+            file_url: fileUrl,
+          })
+          .eq("id", editingId);
+        if (error) throw new Error(error.message);
+        showToast("Vijest je uspješno izmijenjena! 🎉", "success");
+      } else {
+        // ── CREATE mode ──
+        const { error } = await supabase.from("news").insert({
+          title: title.trim(),
+          summary: summary.trim(),
+          content: finalContent,
+          image_urls: imageUrls,
+          file_url: fileUrl,
+          author_id: session.user.id,
+        });
+        if (error) throw new Error(error.message);
+        showToast("Vijest je uspješno objavljena! 🎉", "success");
+      }
+
       localStorage.removeItem("news_section_cache_v2");
       const { data: refreshed } = await supabase
         .from("news")
@@ -606,8 +664,9 @@ export default function AdminPage() {
             created_at: item.created_at ?? null,
           })),
         );
-      showToast("Vijest je uspješno objavljena! 🎉", "success");
       resetForm();
+      setEditingId(null);
+      setShowForm(false);
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : "Nepoznata greška",
@@ -632,6 +691,50 @@ export default function AdminPage() {
       showToast(error instanceof Error ? error.message : "Greška", "error");
     } finally {
       setDeletingNewsId(null);
+    }
+  };
+
+  const handleEdit = async (id: string) => {
+    if (!supabase) return;
+    setLoadingEditData(true);
+    try {
+      const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (error || !data) {
+        showToast("Greška pri učitavanju vijesti.", "error");
+        return;
+      }
+      setTitle(data.title ?? "");
+      setSummary(data.summary ?? "");
+      // Strip the auto-appended document HTML from content when editing
+      let existingContent = data.content ?? "";
+      const docIndex = existingContent.indexOf("<h3>Dokument</h3>");
+      if (docIndex !== -1) {
+        existingContent = existingContent.slice(0, docIndex).trim();
+      }
+      setContent(existingContent);
+      setExistingImageUrls(
+        Array.isArray(data.image_urls) ? data.image_urls : [],
+      );
+      setExistingFileUrl(data.file_url ?? null);
+      setSelectedImages([]);
+      setDocumentFile(null);
+      setEditingId(id);
+      setShowForm(true);
+      // Scroll form into view
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Nepoznata greška",
+        "error",
+      );
+    } finally {
+      setLoadingEditData(false);
     }
   };
 
@@ -1017,154 +1120,247 @@ export default function AdminPage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
               >
-                {/* Create News Form */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                  <div className="px-6 py-4 border-b border-gray-100">
-                    <h2 className="text-base font-semibold text-gray-900">
-                      Create News Article
-                    </h2>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Publish a new article to the homepage
-                    </p>
-                  </div>
-                  <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Create / Edit News Form (hidden by default, shown on "Add News" or Edit) */}
+                {(showForm || editingId) && (
+                  <div
+                    ref={formRef}
+                    className="bg-white rounded-xl border border-gray-200 shadow-sm"
+                  >
+                    <div className="px-6 py-4 border-b border-gray-100">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-base font-semibold text-gray-900">
+                            {editingId
+                              ? "Edit News Article"
+                              : "Create News Article"}
+                          </h2>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {editingId
+                              ? "Modify the existing article and save changes"
+                              : "Publish a new article to the homepage"}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCancelEdit}
+                          className="h-9 px-4 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                    <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                            Title *
+                          </label>
+                          <input
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                            placeholder="Article title"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                            Images
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) =>
+                              setSelectedImages(
+                                e.target.files
+                                  ? Array.from(e.target.files)
+                                  : [],
+                              )
+                            }
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
+                          />
+                          {/* Existing images preview when editing */}
+                          {existingImageUrls.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-2">
+                              {existingImageUrls.map((url, idx) => (
+                                <div key={idx} className="relative group">
+                                  <img
+                                    src={url}
+                                    alt={`Existing image ${idx + 1}`}
+                                    className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExistingImageUrls((prev) =>
+                                        prev.filter((_, i) => i !== idx),
+                                      );
+                                    }}
+                                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                          Title *
+                          Summary *
                         </label>
-                        <input
-                          value={title}
-                          onChange={(e) => setTitle(e.target.value)}
-                          className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
-                          placeholder="Article title"
+                        <textarea
+                          value={summary}
+                          onChange={(e) => setSummary(e.target.value)}
+                          rows={3}
+                          className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                          placeholder="Brief summary of the article"
                           required
                         />
                       </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Content *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={insertLinkIntoSelectedText}
+                            className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                            </svg>
+                            Add Link
+                          </button>
+                        </div>
+                        <textarea
+                          ref={contentRef}
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
+                          rows={14}
+                          className="w-full rounded-xl border border-gray-300 px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                          placeholder="Write your article content here... (plain text or HTML)"
+                          required
+                        />
+                        <p className="mt-1.5 text-[11px] text-gray-400">
+                          {"Supports plain text and HTML (<p>, <h2>, <a>...)"}
+                        </p>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                          Images
+                          Document (optional)
                         </label>
                         <input
                           type="file"
-                          accept="image/*"
-                          multiple
                           onChange={(e) =>
-                            setSelectedImages(
-                              e.target.files ? Array.from(e.target.files) : [],
-                            )
+                            setDocumentFile(e.target.files?.[0] ?? null)
                           }
                           className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
                         />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                        Summary *
-                      </label>
-                      <textarea
-                        value={summary}
-                        onChange={(e) => setSummary(e.target.value)}
-                        rows={3}
-                        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
-                        placeholder="Brief summary of the article"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                          Content *
-                        </label>
-                        <button
-                          type="button"
-                          onClick={insertLinkIntoSelectedText}
-                          className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-                            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-                          </svg>
-                          Add Link
-                        </button>
-                      </div>
-                      <textarea
-                        ref={contentRef}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={14}
-                        className="w-full rounded-xl border border-gray-300 px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
-                        placeholder="Write your article content here... (plain text or HTML)"
-                        required
-                      />
-                      <p className="mt-1.5 text-[11px] text-gray-400">
-                        {"Supports plain text and HTML (<p>, <h2>, <a>...)"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                        Document (optional)
-                      </label>
-                      <input
-                        type="file"
-                        onChange={(e) =>
-                          setDocumentFile(e.target.files?.[0] ?? null)
-                        }
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <span className="text-xs text-gray-400">
-                        {newsItems.length} articles published
-                      </span>
-                      <button
-                        type="submit"
-                        disabled={!canSubmit || isSaving}
-                        className="h-11 px-8 rounded-xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-semibold hover:from-green-700 hover:to-emerald-800 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
-                      >
-                        {isSaving ? (
-                          <span className="flex items-center gap-2">
+                        {existingFileUrl && !documentFile && (
+                          <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1">
                             <svg
-                              className="animate-spin h-4 w-4"
                               xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
+                              width="12"
+                              height="12"
                               viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
                             >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                              />
+                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                              <polyline points="14 2 14 8 20 8" />
                             </svg>
-                            Publishing...
-                          </span>
-                        ) : (
-                          "Publish Article"
+                            Current:{" "}
+                            <a
+                              href={existingFileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-600 underline hover:text-green-700"
+                            >
+                              {existingFileUrl.split("/").pop() ?? "document"}
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setExistingFileUrl(null)}
+                              className="ml-1 text-red-500 hover:text-red-700 text-xs"
+                            >
+                              (Remove)
+                            </button>
+                          </p>
                         )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <span className="text-xs text-gray-400">
+                          {newsItems.length} articles published
+                        </span>
+                        <div className="flex items-center gap-3">
+                          {editingId && (
+                            <button
+                              type="button"
+                              onClick={handleCancelEdit}
+                              disabled={isSaving}
+                              className="h-11 px-6 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          <button
+                            type="submit"
+                            disabled={!canSubmit || isSaving}
+                            className="h-11 px-8 rounded-xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-semibold hover:from-green-700 hover:to-emerald-800 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md"
+                          >
+                            {isSaving ? (
+                              <span className="flex items-center gap-2">
+                                <svg
+                                  className="animate-spin h-4 w-4"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                  />
+                                  <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                  />
+                                </svg>
+                                {editingId ? "Saving..." : "Publishing..."}
+                              </span>
+                            ) : editingId ? (
+                              "Save Changes"
+                            ) : (
+                              "Publish Article"
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                )}
 
                 {/* Existing News */}
                 <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -1178,9 +1374,30 @@ export default function AdminPage() {
                           Manage your published news articles
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full font-medium">
-                        {newsItems.length} total
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleAddNews}
+                          className="h-9 px-4 rounded-xl bg-gradient-to-r from-green-600 to-emerald-700 text-white text-sm font-semibold hover:from-green-700 hover:to-emerald-800 active:scale-[0.98] transition-all shadow-sm flex items-center gap-1.5"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                          >
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                          Add News
+                        </button>
+                        <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full font-medium">
+                          {newsItems.length} total
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <div className="p-6">
@@ -1215,34 +1432,13 @@ export default function AdminPage() {
                                 {formatDate(item.created_at)}
                               </p>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteNews(item.id)}
-                              disabled={deletingNewsId === item.id}
-                              className="ml-4 h-9 px-4 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-all flex items-center gap-1.5"
-                            >
-                              {deletingNewsId === item.id ? (
-                                <svg
-                                  className="animate-spin h-3.5 w-3.5"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <circle
-                                    className="opacity-25"
-                                    cx="12"
-                                    cy="12"
-                                    r="10"
-                                    stroke="currentColor"
-                                    strokeWidth="4"
-                                  />
-                                  <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                  />
-                                </svg>
-                              ) : (
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleEdit(item.id)}
+                                disabled={loadingEditData}
+                                className="h-9 px-4 rounded-xl border border-blue-200 text-sm font-medium text-blue-600 hover:bg-blue-50 hover:border-blue-300 disabled:opacity-50 transition-all flex items-center gap-1.5"
+                              >
                                 <svg
                                   xmlns="http://www.w3.org/2000/svg"
                                   width="14"
@@ -1252,14 +1448,57 @@ export default function AdminPage() {
                                   stroke="currentColor"
                                   strokeWidth="2"
                                 >
-                                  <polyline points="3 6 5 6 21 6" />
-                                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
                                 </svg>
-                              )}
-                              {deletingNewsId === item.id
-                                ? "Deleting..."
-                                : "Delete"}
-                            </button>
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteNews(item.id)}
+                                disabled={deletingNewsId === item.id}
+                                className="h-9 px-4 rounded-xl border border-red-200 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 disabled:opacity-50 transition-all flex items-center gap-1.5"
+                              >
+                                {deletingNewsId === item.id ? (
+                                  <svg
+                                    className="animate-spin h-3.5 w-3.5"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                  </svg>
+                                )}
+                                {deletingNewsId === item.id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </div>
                           </motion.div>
                         ))}
                       </div>

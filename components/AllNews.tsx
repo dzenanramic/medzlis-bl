@@ -83,7 +83,7 @@ export default function AllNews() {
           {news.map((item) => (
             <Link
               key={item.id}
-              href={`/news/${item.id}`}
+              href={`/news/view?id=${item.id}`}
               className="h-full flex"
             >
               <NewsCard item={item} />
