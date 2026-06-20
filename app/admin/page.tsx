@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
@@ -1185,9 +1186,11 @@ export default function AdminPage() {
                             <div className="mt-2 flex flex-wrap gap-2">
                               {existingImageUrls.map((url, idx) => (
                                 <div key={idx} className="relative group">
-                                  <img
+                                  <Image
                                     src={url}
                                     alt={`Existing image ${idx + 1}`}
+                                    width={64}
+                                    height={64}
                                     className="w-16 h-16 rounded-lg object-cover border border-gray-200"
                                   />
                                   <button
