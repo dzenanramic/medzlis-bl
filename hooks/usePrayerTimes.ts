@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import i18n from "@/lib/i18n/client";
 
 export interface PrayerTimesData {
   vakat: string[];
@@ -12,9 +13,24 @@ const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
  * Fetch prayer times directly from the AlAdhan API (no Next.js proxy needed).
  * Defaults to Landsberg am Lech, Germany.
  */
+function formatReadableDate(rawDate: string, lang: string): string {
+  const dateParts = rawDate.split("-"); // DD-MM-YYYY
+  const day = parseInt(dateParts[0], 10);
+  const month = parseInt(dateParts[1], 10) - 1;
+  const year = parseInt(dateParts[2], 10);
+  const dateObj = new Date(year, month, day);
+  const locale = lang === "de" ? "de-DE" : "bs-BA";
+  return dateObj.toLocaleDateString(locale, {
+    weekday: "long",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+}
+
 async function fetchPrayerTimesFromAlAdhan(): Promise<{
   times: string[];
-  readableDate: string;
+  rawDate: string;
 }> {
   const now = new Date();
   const dd = String(now.getDate()).padStart(2, "0");
@@ -43,19 +59,21 @@ async function fetchPrayerTimesFromAlAdhan(): Promise<{
   // Extract only the 5 obligatory prayers in order
   const times = PRAYER_ORDER.map((name) => timings[name]).filter(Boolean);
 
-  // Build readable date
+  // Return raw gregorian date string (DD-MM-YYYY)
   const greg = json.data.date.gregorian;
-  const weekday = greg.weekday?.en ?? "";
-  const readableDate = weekday ? `${weekday}, ${greg.date}` : greg.date;
 
-  return { times, readableDate };
+  return { times, rawDate: greg.date };
 }
 
 export function usePrayerTimes() {
   const [prayerTimes, setPrayerTimes] = useState<string[] | null>(null);
-  const [date, setDate] = useState<string | null>(null);
+  const [rawDate, setRawDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Compute readable date based on current language
+  const lang = i18n.language;
+  const date = rawDate ? formatReadableDate(rawDate, lang) : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -69,10 +87,9 @@ export function usePrayerTimes() {
       if (cached) {
         const { data, timestamp } = JSON.parse(cached);
         if (Date.now() - timestamp < 60 * 60 * 1000) {
-          // 1 hour cache
           if (!cancelled) {
             setPrayerTimes(data.times);
-            setDate(data.readableDate ?? data.date);
+            setRawDate(data.rawDate);
             setLoading(false);
           }
           return;
@@ -80,16 +97,16 @@ export function usePrayerTimes() {
       }
 
       try {
-        const { times, readableDate } = await fetchPrayerTimesFromAlAdhan();
+        const { times, rawDate } = await fetchPrayerTimesFromAlAdhan();
         if (cancelled) return;
 
         setPrayerTimes(times);
-        setDate(readableDate);
+        setRawDate(rawDate);
 
         localStorage.setItem(
           cacheKey,
           JSON.stringify({
-            data: { times, readableDate },
+            data: { times, rawDate },
             timestamp: Date.now(),
           }),
         );

@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 // ─── Icons (inline to avoid deps) ──────────────────────────────────────────
 
@@ -128,15 +129,9 @@ type Tab = "dashboard" | "news" | "transactions";
 
 interface NavItem {
   id: Tab;
-  label: string;
+  labelKey: string;
   icon: (props: React.SVGProps<SVGSVGElement>) => React.ReactNode;
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { id: "dashboard", label: "Dashboard", icon: Icons.dashboard },
-  { id: "news", label: "News", icon: Icons.news },
-  { id: "transactions", label: "Transactions", icon: Icons.payments },
-];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -330,7 +325,14 @@ function EmptyState({
 
 // ─── Main Admin Page ────────────────────────────────────────────────────────
 
+const NAV_ITEMS: NavItem[] = [
+  { id: "dashboard", labelKey: "admin.dashboard", icon: Icons.dashboard },
+  { id: "news", labelKey: "admin.news", icon: Icons.news },
+  { id: "transactions", labelKey: "admin.transactions", icon: Icons.payments },
+];
+
 export default function AdminPage() {
+  const { t } = useTranslation();
   // ── State ──
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -351,10 +353,14 @@ export default function AdminPage() {
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
+  const [titleDe, setTitleDe] = useState("");
+  const [summaryDe, setSummaryDe] = useState("");
+  const [contentDe, setContentDe] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [documentFile, setDocumentFile] = useState<File | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const contentRef = useRef<HTMLTextAreaElement | null>(null);
+  const contentDeRef = useRef<HTMLTextAreaElement | null>(null);
 
   // Edit
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -539,14 +545,18 @@ export default function AdminPage() {
     return data.publicUrl;
   };
 
-  const insertLinkIntoSelectedText = () => {
-    const textarea = contentRef.current;
+  const insertLinkIntoSelectedText = (
+    ref: React.RefObject<HTMLTextAreaElement | null>,
+    text: string,
+    setText: (val: string) => void,
+  ) => {
+    const textarea = ref.current;
     if (!textarea) return;
     const selectionStart = textarea.selectionStart;
     const selectionEnd = textarea.selectionEnd;
-    const selectedText = content.slice(selectionStart, selectionEnd).trim();
+    const selectedText = text.slice(selectionStart, selectionEnd).trim();
     if (!selectedText) {
-      showToast("Selektuj tekst pa klikni na 'Add link'.", "error");
+      showToast(t("admin.selectTextForLink"), "error");
       return;
     }
     const rawUrl = window.prompt("Unesi URL:", "https://");
@@ -569,6 +579,9 @@ export default function AdminPage() {
     setTitle("");
     setSummary("");
     setContent("");
+    setTitleDe("");
+    setSummaryDe("");
+    setContentDe("");
     setSelectedImages([]);
     setDocumentFile(null);
     setExistingImageUrls([]);
@@ -631,24 +644,30 @@ export default function AdminPage() {
             title: title.trim(),
             summary: summary.trim(),
             content: finalContent,
+            title_de: titleDe.trim() || null,
+            summary_de: summaryDe.trim() || null,
+            content_de: contentDe.trim() || null,
             image_urls: imageUrls,
             file_url: fileUrl,
           })
           .eq("id", editingId);
         if (error) throw new Error(error.message);
-        showToast("Vijest je uspješno izmijenjena! 🎉", "success");
+        showToast(t("admin.newsUpdated"), "success");
       } else {
         // ── CREATE mode ──
         const { error } = await supabase.from("news").insert({
           title: title.trim(),
           summary: summary.trim(),
           content: finalContent,
+          title_de: titleDe.trim() || null,
+          summary_de: summaryDe.trim() || null,
+          content_de: contentDe.trim() || null,
           image_urls: imageUrls,
           file_url: fileUrl,
           author_id: session.user.id,
         });
         if (error) throw new Error(error.message);
-        showToast("Vijest je uspješno objavljena! 🎉", "success");
+        showToast(t("admin.newsCreated"), "success");
       }
 
       localStorage.removeItem("news_section_cache_v2");
@@ -680,14 +699,14 @@ export default function AdminPage() {
 
   const handleDeleteNews = async (id: string) => {
     if (!supabase) return;
-    if (!window.confirm("Da li sigurno želiš obrisati ovu vijest?")) return;
+    if (!window.confirm(t("admin.confirmDelete"))) return;
     setDeletingNewsId(id);
     try {
       const { error } = await supabase.from("news").delete().eq("id", id);
       if (error) throw new Error(error.message);
       setNewsItems((current) => current.filter((item) => item.id !== id));
       localStorage.removeItem("news_section_cache_v2");
-      showToast("Vijest je obrisana.", "success");
+      showToast(t("admin.newsDeleted"), "success");
     } catch (error) {
       showToast(error instanceof Error ? error.message : "Greška", "error");
     } finally {
@@ -710,6 +729,8 @@ export default function AdminPage() {
       }
       setTitle(data.title ?? "");
       setSummary(data.summary ?? "");
+      setTitleDe(data.title_de ?? "");
+      setSummaryDe(data.summary_de ?? "");
       // Strip the auto-appended document HTML from content when editing
       let existingContent = data.content ?? "";
       const docIndex = existingContent.indexOf("<h3>Dokument</h3>");
@@ -717,6 +738,12 @@ export default function AdminPage() {
         existingContent = existingContent.slice(0, docIndex).trim();
       }
       setContent(existingContent);
+      let existingContentDe = data.content_de ?? "";
+      const docIndexDe = existingContentDe.indexOf("<h3>Dokument</h3>");
+      if (docIndexDe !== -1) {
+        existingContentDe = existingContentDe.slice(0, docIndexDe).trim();
+      }
+      setContentDe(existingContentDe);
       setExistingImageUrls(
         Array.isArray(data.image_urls) ? data.image_urls : [],
       );
@@ -913,7 +940,7 @@ export default function AdminPage() {
                 }`}
               >
                 <Icon className="w-5 h-5 flex-shrink-0" />
-                {item.label}
+                {t(item.labelKey)}
               </button>
             );
           })}
@@ -926,7 +953,7 @@ export default function AdminPage() {
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-red-600 transition-all"
           >
             <Icons.logout className="w-5 h-5" />
-            Logout
+            {t("admin.logout")}
           </button>
           <div className="px-4 pt-3 text-[10px] text-gray-400">
             {session.user?.email}
@@ -959,10 +986,10 @@ export default function AdminPage() {
             </button>
             <h1 className="text-lg font-semibold text-gray-900 capitalize">
               {activeTab === "dashboard"
-                ? "Dashboard"
+                ? t("admin.dashboardTitle")
                 : activeTab === "news"
-                  ? "News Management"
-                  : "Transactions"}
+                  ? t("admin.newsTitle")
+                  : t("admin.transactionsTitle")}
             </h1>
           </div>
           <div className="flex items-center gap-3">
@@ -988,26 +1015,26 @@ export default function AdminPage() {
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                   <StatCard
-                    label="Total Revenue"
+                    label={t("admin.totalRevenue")}
                     value={formatCurrency(totalRevenue, "EUR")}
                     icon={<Icons.payments className="w-5 h-5" />}
                   />
                   <StatCard
-                    label="Payments"
+                    label={t("admin.payments")}
                     value={payments.length}
                     icon={<Icons.users className="w-5 h-5" />}
                     trend={{
-                      value: `${payments.filter((p) => p.status === "COMPLETED").length} completed`,
+                      value: `${payments.filter((p) => p.status === "COMPLETED").length} ${t("admin.completed").toLowerCase()}`,
                       positive: true,
                     }}
                   />
                   <StatCard
-                    label="News Articles"
+                    label={t("admin.newsArticles")}
                     value={newsItems.length}
                     icon={<Icons.news className="w-5 h-5" />}
                   />
                   <StatCard
-                    label="Latest Payment"
+                    label={t("admin.latestPayment")}
                     value={
                       latestPayment
                         ? formatCurrency(
@@ -1025,18 +1052,18 @@ export default function AdminPage() {
                   <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-sm font-semibold text-gray-900">
-                        Recent News
+                        {t("admin.recentNews")}
                       </h2>
                       <button
                         onClick={() => setActiveTab("news")}
                         className="text-xs text-green-600 hover:text-green-700 font-medium"
                       >
-                        View all →
+                        {t("admin.viewAll")}
                       </button>
                     </div>
                     {newsItems.length === 0 ? (
                       <p className="text-sm text-gray-400 text-center py-8">
-                        No news articles yet.
+                        {t("admin.noArticles")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -1061,18 +1088,18 @@ export default function AdminPage() {
                   <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-sm font-semibold text-gray-900">
-                        Recent Payments
+                        {t("admin.recentPayments")}
                       </h2>
                       <button
                         onClick={() => setActiveTab("transactions")}
                         className="text-xs text-green-600 hover:text-green-700 font-medium"
                       >
-                        View all →
+                        {t("admin.viewAll")}
                       </button>
                     </div>
                     {payments.length === 0 ? (
                       <p className="text-sm text-gray-400 text-center py-8">
-                        No payments yet.
+                        {t("admin.noPayments")}
                       </p>
                     ) : (
                       <div className="space-y-3">
@@ -1095,10 +1122,10 @@ export default function AdminPage() {
                                 }`}
                               >
                                 {p.status === "COMPLETED"
-                                  ? "Paid"
+                                  ? t("admin.paid")
                                   : p.status === "REFUNDED"
-                                    ? "Refunded"
-                                    : "Pending"}
+                                    ? t("admin.refunded")
+                                    : t("admin.pending")}
                               </span>
                             </div>
                             <span className="text-[11px] text-gray-400">
@@ -1132,13 +1159,13 @@ export default function AdminPage() {
                         <div>
                           <h2 className="text-base font-semibold text-gray-900">
                             {editingId
-                              ? "Edit News Article"
-                              : "Create News Article"}
+                              ? t("admin.editNews")
+                              : t("admin.createNews")}
                           </h2>
                           <p className="text-xs text-gray-500 mt-0.5">
                             {editingId
-                              ? "Modify the existing article and save changes"
-                              : "Publish a new article to the homepage"}
+                              ? t("admin.modifyArticle")
+                              : t("admin.createArticle")}
                           </p>
                         </div>
                         <button
@@ -1146,7 +1173,7 @@ export default function AdminPage() {
                           onClick={handleCancelEdit}
                           className="h-9 px-4 rounded-xl border border-gray-300 text-sm font-medium text-gray-600 hover:bg-gray-100 transition-all"
                         >
-                          Close
+                          {t("admin.close")}
                         </button>
                       </div>
                     </div>
@@ -1154,7 +1181,7 @@ export default function AdminPage() {
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <div>
                           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                            Title *
+                            {t("admin.title")}
                           </label>
                           <input
                             value={title}
@@ -1166,7 +1193,7 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                            Images
+                            {t("admin.images")}
                           </label>
                           <input
                             type="file"
@@ -1213,7 +1240,7 @@ export default function AdminPage() {
 
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                          Summary *
+                          {t("admin.summary")}
                         </label>
                         <textarea
                           value={summary}
@@ -1228,11 +1255,17 @@ export default function AdminPage() {
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                            Content *
+                            {t("admin.content")}
                           </label>
                           <button
                             type="button"
-                            onClick={insertLinkIntoSelectedText}
+                            onClick={() =>
+                              insertLinkIntoSelectedText(
+                                contentRef,
+                                content,
+                                setContent,
+                              )
+                            }
                             className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
                           >
                             <svg
@@ -1247,7 +1280,7 @@ export default function AdminPage() {
                               <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
                               <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
                             </svg>
-                            Add Link
+                            {t("admin.addLink")}
                           </button>
                         </div>
                         <textarea
@@ -1264,9 +1297,92 @@ export default function AdminPage() {
                         </p>
                       </div>
 
+                      {/* ── German (DE) fields ── */}
+                      <div className="border-t border-gray-200 pt-5">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-1">
+                          German Translation (optional)
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-4">
+                          Enter German versions if available
+                        </p>
+
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                              Title (DE)
+                            </label>
+                            <input
+                              value={titleDe}
+                              onChange={(e) => setTitleDe(e.target.value)}
+                              className="h-11 w-full rounded-xl border border-gray-300 px-4 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                              placeholder="Artikelüberschrift"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
+                              Summary (DE)
+                            </label>
+                            <textarea
+                              value={summaryDe}
+                              onChange={(e) => setSummaryDe(e.target.value)}
+                              rows={3}
+                              className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                              placeholder="Kurze Zusammenfassung des Artikels"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500">
+                                Content (DE)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  insertLinkIntoSelectedText(
+                                    contentDeRef,
+                                    contentDe,
+                                    setContentDe,
+                                  )
+                                }
+                                className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                >
+                                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                                  <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                                </svg>
+                                {t("admin.addLink")}
+                              </button>
+                            </div>
+                            <textarea
+                              ref={contentDeRef}
+                              value={contentDe}
+                              onChange={(e) => setContentDe(e.target.value)}
+                              rows={10}
+                              className="w-full rounded-xl border border-gray-300 px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                              placeholder="German article content... (plain text or HTML)"
+                            />
+                            <p className="mt-1.5 text-[11px] text-gray-400">
+                              {
+                                "Supports plain text and HTML (<p>, <h2>, <a>...)"
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1.5">
-                          Document (optional)
+                          {t("admin.document")}
                         </label>
                         <input
                           type="file"
@@ -1311,7 +1427,7 @@ export default function AdminPage() {
 
                       <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                         <span className="text-xs text-gray-400">
-                          {newsItems.length} articles published
+                          {newsItems.length} {t("admin.articlesPublished")}
                         </span>
                         <div className="flex items-center gap-3">
                           {editingId && (
@@ -1523,7 +1639,7 @@ export default function AdminPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                   <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                      Total Revenue
+                      {t("admin.totalRevenue")}
                     </p>
                     <p className="text-2xl font-bold text-gray-900">
                       {formatCurrency(totalRevenue, "EUR")}
@@ -1531,7 +1647,7 @@ export default function AdminPage() {
                   </div>
                   <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                      Completed
+                      {t("admin.completed")}
                     </p>
                     <p className="text-2xl font-bold text-green-600">
                       {payments.filter((p) => p.status === "COMPLETED").length}
@@ -1539,7 +1655,7 @@ export default function AdminPage() {
                   </div>
                   <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
                     <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-                      Pending / Refunded
+                      {t("admin.pending")} / {t("admin.refunded")}
                     </p>
                     <p className="text-2xl font-bold text-amber-600">
                       {payments.filter((p) => p.status !== "COMPLETED").length}
@@ -1553,14 +1669,14 @@ export default function AdminPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-base font-semibold text-gray-900">
-                          Payment History
+                          {t("admin.paymentHistory")}
                         </h2>
                         <p className="text-xs text-gray-500 mt-0.5">
-                          All PayPal membership transactions
+                          {t("admin.allTransactions")}
                         </p>
                       </div>
                       <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full font-medium">
-                        {payments.length} total
+                        {payments.length} {t("admin.total")}
                       </span>
                     </div>
                   </div>
@@ -1576,8 +1692,8 @@ export default function AdminPage() {
                       </div>
                     ) : payments.length === 0 ? (
                       <EmptyState
-                        title="No transactions yet"
-                        description="PayPal membership payments will appear here once members start paying."
+                        title={t("admin.noTransactions")}
+                        description={t("admin.noTransactionsDesc")}
                         icon={
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -1599,19 +1715,19 @@ export default function AdminPage() {
                           <thead>
                             <tr className="border-b border-gray-100">
                               <th className="text-left py-3 px-6 font-semibold text-gray-500 text-xs uppercase tracking-wider">
-                                Date
+                                {t("admin.date")}
                               </th>
                               <th className="text-left py-3 px-6 font-semibold text-gray-500 text-xs uppercase tracking-wider">
-                                Amount
+                                {t("admin.amount")}
                               </th>
                               <th className="text-left py-3 px-6 font-semibold text-gray-500 text-xs uppercase tracking-wider">
-                                Status
+                                {t("admin.status")}
                               </th>
                               <th className="text-left py-3 px-6 font-semibold text-gray-500 text-xs uppercase tracking-wider">
-                                Payer
+                                {t("admin.payer")}
                               </th>
                               <th className="text-left py-3 px-6 font-semibold text-gray-500 text-xs uppercase tracking-wider">
-                                Type
+                                {t("admin.type")}
                               </th>
                             </tr>
                           </thead>
@@ -1657,11 +1773,11 @@ export default function AdminPage() {
                                       }`}
                                     />
                                     {payment.status === "COMPLETED"
-                                      ? "Completed"
+                                      ? t("admin.completed")
                                       : payment.status === "REFUNDED"
-                                        ? "Refunded"
+                                        ? t("admin.refunded")
                                         : payment.status === "PENDING"
-                                          ? "Pending"
+                                          ? t("admin.pending")
                                           : payment.status}
                                   </span>
                                 </td>
@@ -1673,7 +1789,7 @@ export default function AdminPage() {
                                 <td className="py-4 px-6">
                                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md capitalize">
                                     {payment.payment_type === "membership"
-                                      ? "Membership"
+                                      ? t("admin.membership")
                                       : payment.payment_type}
                                   </span>
                                 </td>

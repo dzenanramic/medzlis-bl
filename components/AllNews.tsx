@@ -4,10 +4,12 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import NewsCard from "./NewsCard";
 import Link from "next/link";
 import { DisplayNewsItem, normalizeNewsList } from "@/lib/newsNormalize";
+import { useTranslation } from "react-i18next";
 
 const PAGE_SIZE = 6;
 
 export default function AllNews() {
+  const { t } = useTranslation();
   const [news, setNews] = useState<DisplayNewsItem[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -71,11 +73,11 @@ export default function AllNews() {
   return (
     <section className="py-10 px-2 max-w-6xl mx-auto">
       <h1 className="text-2xl md:text-3xl font-semibold tracking-tight mb-8 text-center">
-        Sve Vijesti
+        {t("news.allNews")}
       </h1>
       {hasFetchError && (
         <p className="text-center text-sm text-red-600 mb-6">
-          Ne mozemo ucitati vijesti trenutno.
+          {t("news.fetchError")}
         </p>
       )}
       {news.length > 0 ? (
@@ -92,9 +94,7 @@ export default function AllNews() {
         </div>
       ) : (
         !loading && (
-          <p className="text-center text-gray-500">
-            Trenutno nema vijesti u bazi.
-          </p>
+          <p className="text-center text-gray-500">{t("news.noNews")}</p>
         )
       )}
       {hasMore && (
@@ -104,7 +104,7 @@ export default function AllNews() {
             disabled={loading}
             className="mx-auto flex items-center justify-center bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-lg shadow-sm transition-all duration-300 text-base w-fit"
           >
-            {loading ? "Učitavanje..." : "Učitaj još"}
+            {loading ? t("news.loading") : t("news.loadMore")}
           </button>
         </div>
       )}

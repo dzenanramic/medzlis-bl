@@ -3,6 +3,9 @@ export type DisplayNewsItem = {
   title: string;
   summary: string;
   content: string;
+  title_de?: string;
+  summary_de?: string;
+  content_de?: string;
   image_url: string;
   date: string;
   additional_images?: string[];
@@ -14,6 +17,9 @@ export type RawNewsRow = {
   title?: string | null;
   summary?: string | null;
   content?: string | null;
+  title_de?: string | null;
+  summary_de?: string | null;
+  content_de?: string | null;
   image_url?: string | null;
   image_urls?: string[] | null;
   additional_images?: string[] | null;
@@ -81,6 +87,9 @@ export const normalizeNewsItem = (
     title,
     summary: buildSummary(row.summary, content),
     content,
+    title_de: row.title_de?.trim() || undefined,
+    summary_de: row.summary_de?.trim() || undefined,
+    content_de: row.content_de?.trim() || undefined,
     image_url: firstImage,
     additional_images: row.additional_images ?? imageArray.slice(1),
     date,

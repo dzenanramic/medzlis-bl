@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -10,6 +11,8 @@ import { normalizeNewsItem, DisplayNewsItem } from "@/lib/newsNormalize";
 const containsHtml = (value: string) => /<[^>]+>/.test(value);
 
 export default function NewsDetailPage() {
+  const { i18n } = useTranslation();
+  const isDe = i18n.language === "de";
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [news, setNews] = useState<DisplayNewsItem | null>(null);
@@ -33,7 +36,9 @@ export default function NewsDetailPage() {
 
       const { data, error } = await client
         .from("news")
-        .select("id,title,summary,content,image_urls,file_url,created_at")
+        .select(
+          "id,title,summary,content,title_de,summary_de,content_de,image_urls,file_url,created_at",
+        )
         .eq("id", id)
         .single();
 
@@ -75,14 +80,17 @@ export default function NewsDetailPage() {
     );
   }
 
-  const hasHtmlContent = containsHtml(news.content);
+  const displayTitle = isDe && news.title_de ? news.title_de : news.title;
+  const displayContent =
+    isDe && news.content_de ? news.content_de : news.content;
+  const hasHtmlContent = containsHtml(displayContent);
 
   return (
     <section className="max-w-3xl mx-auto py-12 px-4 sm:px-6">
       {/* Title + Date */}
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 leading-tight">
-          {news.title}
+          {displayTitle}
         </h1>
         <div className="flex items-center text-gray-500 mb-6">
           <svg
@@ -100,7 +108,7 @@ export default function NewsDetailPage() {
             />
           </svg>
           <span className="text-sm">
-            {new Date(news.date).toLocaleDateString("en-US", {
+            {new Date(news.date).toLocaleDateString(isDe ? "de-DE" : "bs-BA", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -113,7 +121,7 @@ export default function NewsDetailPage() {
       <div className="rounded-xl overflow-hidden shadow-lg mb-10 transition-all duration-300 hover:shadow-xl">
         <Image
           src={news.image_url}
-          alt={news.title}
+          alt={displayTitle}
           width={800}
           height={450}
           className="w-full h-auto object-cover aspect-video"
@@ -125,11 +133,11 @@ export default function NewsDetailPage() {
       {hasHtmlContent ? (
         <div
           className="max-w-none text-gray-700 leading-8 text-[1.04rem] [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-gray-900 [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-gray-900 [&_h3]:mt-6 [&_h3]:mb-2 [&_p]:mb-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_blockquote]:my-5 [&_blockquote]:border-l-4 [&_blockquote]:border-green-300 [&_blockquote]:pl-4 [&_a]:text-green-700 hover:[&_a]:text-green-800"
-          dangerouslySetInnerHTML={{ __html: news.content }}
+          dangerouslySetInnerHTML={{ __html: displayContent }}
         />
       ) : (
         <div className="whitespace-pre-wrap break-words text-gray-700 leading-8 text-[1.04rem] rounded-xl border border-gray-100 bg-gray-50/60 p-5">
-          {news.content}
+          {displayContent}
         </div>
       )}
 

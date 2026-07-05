@@ -27,17 +27,17 @@ export default function ContactSection() {
     () => [
       {
         label: t("contact.labels.phone"),
-        value: "+387 51 211 840",
+        value: "0049 173 8340119",
         icon: Phone,
       },
       {
         label: t("contact.labels.phone"),
-        value: "+387 51 462 241",
+        value: "0049 173 8340119",
         icon: Phone,
       },
       {
         label: t("contact.labels.address"),
-        value: "Landsberg am Lech, Germany",
+        value: "Landsberg am Lech\nStraße: Albert-Einstein-Straße 7",
         icon: MapPin,
       },
     ],
@@ -102,7 +102,7 @@ export default function ContactSection() {
                         {contact.value}
                       </a>
                     ) : (
-                      <p className="text-muted-foreground mt-1">
+                      <p className="text-muted-foreground mt-1 whitespace-pre-line">
                         {contact.value}
                       </p>
                     )}
