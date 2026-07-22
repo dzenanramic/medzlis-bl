@@ -98,7 +98,6 @@ const defaultNavigationLinks: Navbar01NavLink[] = [
   { href: "/", label: "" },
   { href: "/about-us", label: "" },
   { href: "/news", label: "" },
-  { href: "/membership", label: "" },
   { href: "/donations", label: "" },
   { href: "/contact", label: "" },
 ];
@@ -107,7 +106,6 @@ const navLabelByHref: Record<string, string> = {
   "/": "nav.home",
   "/about-us": "nav.about",
   "/news": "nav.news",
-  "/membership": "nav.membership",
   "/donations": "nav.donations",
   "/contact": "nav.contact",
 };

@@ -104,6 +104,19 @@ export const resources = {
         title: "Donacije",
         description:
           "Podržite rad našeg džemata svojom donacijom. Svaka pomoć je dobrodošla.",
+        onlinePaymentTitle: "Online plaćanje (PayPal)",
+        onlinePaymentDesc:
+          "Brzo i sigurno plaćanje putem PayPal-a ili kreditne kartice. Nije potreban PayPal račun — možete platiti i kreditnom karticom.",
+        amountLabel: "Iznos donacije",
+        customAmount: "Drugi iznos",
+        payWithPayPal: "Plati PayPal-om",
+        paymentSuccessful:
+          "Uplata uspješna! Hvala na podršci. Potvrda je poslata na vaš email.",
+        paymentError: "Došlo je do greške pri obradi uplate. Pokušajte ponovo.",
+        paymentCancelled: "Plaćanje je otkazano.",
+        orBankTransfer: "Ili putem bankovnog transfera",
+        bankTransferInfo:
+          "Za uplate iz Bosne i Hercegovine i inostranstva, koristite bankovne instrukcije ispod.",
         embedInstruction:
           "Donacijski formular je obezbijeđen od strane iRaiser-a.",
         embedPlaceholder:
@@ -117,14 +130,10 @@ export const resources = {
           about: "O nama",
           news: "Vijesti",
           humanitarian: "Humanitarni rad",
-          membership: "Članarina",
         },
-        workingHours: "Radno vrijeme",
-        workingHoursDays: {
-          weekdays: "Pon - Pet: 08h - 16h",
-          saturday: "Sub: 09h - 13h",
-          sunday: "Ned: Zatvoreno",
-        },
+        impressum: "Impressum",
+        impressumName: "IGBD – Gemeinde Landsberg am Lech e.V. i.G.",
+        impressumAddress: "Albert-Einstein-Straße 7, 86899 Landsberg am Lech",
         followUs: "Pratite nas",
         rights: "Sva prava zadržana.",
       },
@@ -299,6 +308,20 @@ export const resources = {
         title: "Spenden",
         description:
           "Unterstützen Sie unsere Gemeinde mit Ihrer Spende. Jede Hilfe ist willkommen.",
+        onlinePaymentTitle: "Online-Zahlung (PayPal)",
+        onlinePaymentDesc:
+          "Schnelle und sichere Zahlung per PayPal oder Kreditkarte. Kein PayPal-Konto erforderlich — Sie können auch mit Ihrer Kreditkarte zahlen.",
+        amountLabel: "Spendenbetrag",
+        customAmount: "Anderer Betrag",
+        payWithPayPal: "Mit PayPal bezahlen",
+        paymentSuccessful:
+          "Zahlung erfolgreich! Vielen Dank für Ihre Unterstützung. Eine Bestätigung wurde an Ihre E-Mail gesendet.",
+        paymentError:
+          "Bei der Zahlung ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+        paymentCancelled: "Zahlung abgebrochen.",
+        orBankTransfer: "Oder per Banküberweisung",
+        bankTransferInfo:
+          "Für Überweisungen aus Bosnien-Herzegowina und dem Ausland verwenden Sie bitte die folgenden Bankinformationen.",
         embedInstruction:
           "Das Spendenformular wird von iRaiser bereitgestellt.",
         embedPlaceholder:
@@ -312,14 +335,10 @@ export const resources = {
           about: "Über uns",
           news: "Nachrichten",
           humanitarian: "Humanitäre Arbeit",
-          membership: "Mitgliedschaft",
         },
-        workingHours: "Arbeitszeiten",
-        workingHoursDays: {
-          weekdays: "Mo - Fr: 08h - 16h",
-          saturday: "Sa: 09h - 13h",
-          sunday: "So: Geschlossen",
-        },
+        impressum: "Impressum",
+        impressumName: "IGBD – Gemeinde Landsberg am Lech e.V. i.G.",
+        impressumAddress: "Albert-Einstein-Straße 7, 86899 Landsberg am Lech",
         followUs: "Folgen Sie uns",
         rights: "Alle Rechte vorbehalten.",
       },

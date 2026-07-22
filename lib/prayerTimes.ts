@@ -41,10 +41,10 @@ export interface PrayerTimesResult {
 
 const ALADHAN_BASE = "https://api.aladhan.com/v1";
 
-/** Default coordinates: Landsberg am Lech, Germany */
+/** Default coordinates: Landsberg am Lech, Germany (48° 02′ 59″ N, 10° 52′ 37″ E) */
 export const DEFAULT_COORDS = {
-  lat: 48.0481,
-  lng: 10.8828,
+  lat: 48.049747,
+  lng: 10.876873,
 };
 
 export const DEFAULT_CITY = {
@@ -120,6 +120,9 @@ function buildReadableDate(dateObj: {
 async function fetchTimings(url: string): Promise<PrayerTimesResult> {
   const res = await fetch(url, {
     next: { revalidate: 86400 }, // 24 h — Next.js built‑in cache
+    headers: {
+      "Accept-Encoding": "",
+    },
   });
 
   if (!res.ok) {
@@ -165,7 +168,14 @@ export async function getPrayerTimesByCoords(
     `${ALADHAN_BASE}/timings/${dateStr}` +
     `?latitude=${lat}&longitude=${lng}` +
     `&method=${method}` +
-    `&timezone=${encodeURIComponent(tz)}`;
+    `&shafaq=general` +
+    `&tune=5,3,5,7,9,-1,0,8,-6` +
+    `&school=0` +
+    `&midnightMode=0` +
+    `&timezonestring=${encodeURIComponent(tz)}` +
+    `&latitudeAdjustmentMethod=1` +
+    `&calendarMethod=UAQ` +
+    `&iso8601=false`;
 
   return fetchTimings(url);
 }

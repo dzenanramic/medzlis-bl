@@ -24,7 +24,6 @@ export default function FooterSection() {
               {[
                 { key: "links.about", href: "/about-us" },
                 { key: "links.news", href: "/news" },
-                { key: "links.membership", href: "/membership" },
               ].map((item) => (
                 <li key={item.key}>
                   <Link
@@ -38,11 +37,12 @@ export default function FooterSection() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">{t("footer.workingHours")}</h4>
+            <h4 className="font-semibold mb-4">{t("footer.impressum")}</h4>
             <ul className="space-y-2 text-stone-400">
-              <li>{t("footer.workingHoursDays.weekdays")}</li>
-              <li>{t("footer.workingHoursDays.saturday")}</li>
-              <li>{t("footer.workingHoursDays.sunday")}</li>
+              <li className="font-medium text-white">
+                {t("footer.impressumName")}
+              </li>
+              <li>{t("footer.impressumAddress")}</li>
             </ul>
           </div>
         </div>

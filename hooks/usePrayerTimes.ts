@@ -38,9 +38,9 @@ async function fetchPrayerTimesFromAlAdhan(): Promise<{
   const yyyy = now.getFullYear();
   const dateStr = `${dd}-${mm}-${yyyy}`;
 
-  // Landsberg am Lech coordinates
-  const lat = 48.0481;
-  const lng = 10.8828;
+  // Landsberg am Lech coordinates (48° 02′ 59″ N, 10° 52′ 37″ E)
+  const lat = 48.049747;
+  const lng = 10.876873;
   const method = 3; // Muslim World League
   const tz = "Europe/Berlin";
 
@@ -48,9 +48,20 @@ async function fetchPrayerTimesFromAlAdhan(): Promise<{
     `https://api.aladhan.com/v1/timings/${dateStr}` +
     `?latitude=${lat}&longitude=${lng}` +
     `&method=${method}` +
-    `&timezone=${encodeURIComponent(tz)}`;
+    `&shafaq=general` +
+    `&tune=5,3,5,7,9,-1,0,8,-6` +
+    `&school=0` +
+    `&midnightMode=0` +
+    `&timezonestring=${encodeURIComponent(tz)}` +
+    `&latitudeAdjustmentMethod=1` +
+    `&calendarMethod=UAQ` +
+    `&iso8601=false`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      "Accept-Encoding": "",
+    },
+  });
   if (!res.ok) throw new Error("Greška pri dohvatanju podataka");
 
   const json = await res.json();
