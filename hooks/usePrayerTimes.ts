@@ -1,24 +1,23 @@
 import { useEffect, useState } from "react";
 import i18n from "@/lib/i18n/client";
+import { supabase } from "@/lib/supabaseClient";
 
 export interface PrayerTimesData {
   vakat: string[];
   datum?: string[];
 }
 
-/** Ordered list of the 5 obligatory prayers as returned by AlAdhan */
-const PRAYER_ORDER = ["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"];
+/** Ordered list of the 5 obligatory prayers */
+const PRAYER_ORDER = ["fajr", "dhuhr", "asr", "maghrib", "isha"];
+
+const DEFAULT_SLUG = "landsberg-am-lech";
 
 /**
- * Fetch prayer times directly from the AlAdhan API (no Next.js proxy needed).
- * Defaults to Landsberg am Lech, Germany.
+ * Format ISO date string (YYYY-MM-DD) → readable locale date.
  */
-function formatReadableDate(rawDate: string, lang: string): string {
-  const dateParts = rawDate.split("-"); // DD-MM-YYYY
-  const day = parseInt(dateParts[0], 10);
-  const month = parseInt(dateParts[1], 10) - 1;
-  const year = parseInt(dateParts[2], 10);
-  const dateObj = new Date(year, month, day);
+function formatReadableDate(isoDate: string, lang: string): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  const dateObj = new Date(y, m - 1, d);
   const locale = lang === "de" ? "de-DE" : "bs-BA";
   return dateObj.toLocaleDateString(locale, {
     weekday: "long",
@@ -28,52 +27,37 @@ function formatReadableDate(rawDate: string, lang: string): string {
   });
 }
 
-async function fetchPrayerTimesFromAlAdhan(): Promise<{
+/**
+ * Fetch prayer times from Supabase (synced daily from vaktija.eu).
+ * Falls back to an empty state if Supabase is not configured.
+ */
+async function fetchPrayerTimesFromSupabase(): Promise<{
   times: string[];
   rawDate: string;
 }> {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, "0");
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const yyyy = now.getFullYear();
-  const dateStr = `${dd}-${mm}-${yyyy}`;
+  if (!supabase) {
+    throw new Error("Supabase not configured");
+  }
 
-  // Landsberg am Lech coordinates (48° 02′ 59″ N, 10° 52′ 37″ E)
-  const lat = 48.049747;
-  const lng = 10.876873;
-  const method = 3; // Muslim World League
-  const tz = "Europe/Berlin";
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  const url =
-    `https://api.aladhan.com/v1/timings/${dateStr}` +
-    `?latitude=${lat}&longitude=${lng}` +
-    `&method=${method}` +
-    `&shafaq=general` +
-    `&tune=5,3,5,7,9,-1,0,8,-6` +
-    `&school=0` +
-    `&midnightMode=0` +
-    `&timezonestring=${encodeURIComponent(tz)}` +
-    `&latitudeAdjustmentMethod=1` +
-    `&calendarMethod=UAQ` +
-    `&iso8601=false`;
+  const { data, error } = await supabase
+    .from("prayer_times")
+    .select("fajr, dhuhr, asr, maghrib, isha, date")
+    .eq("slug", DEFAULT_SLUG)
+    .eq("date", today)
+    .maybeSingle();
 
-  const res = await fetch(url, {
-    headers: {
-      "Accept-Encoding": "",
-    },
-  });
-  if (!res.ok) throw new Error("Greška pri dohvatanju podataka");
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error(`No prayer times for ${today}`);
 
-  const json = await res.json();
-  const timings: Record<string, string> = json.data.timings;
+  const times = PRAYER_ORDER.map((key) => {
+    const val = (data as Record<string, string>)[key];
+    // Strip seconds: "04:01:00" → "04:01"
+    return val ? val.slice(0, 5) : "";
+  }).filter(Boolean);
 
-  // Extract only the 5 obligatory prayers in order
-  const times = PRAYER_ORDER.map((name) => timings[name]).filter(Boolean);
-
-  // Return raw gregorian date string (DD-MM-YYYY)
-  const greg = json.data.date.gregorian;
-
-  return { times, rawDate: greg.date };
+  return { times, rawDate: (data as Record<string, string>).date };
 }
 
 export function usePrayerTimes() {
@@ -93,22 +77,32 @@ export function usePrayerTimes() {
       setLoading(true);
       setError(null);
 
-      const cacheKey = "prayerTimesAlAdhan";
+      const today = new Date().toISOString().split("T")[0];
+      const cacheKey = `prayerTimes_v2_${today}`;
+
+      // Check localStorage cache (valid until midnight)
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
-        const { data, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < 60 * 60 * 1000) {
-          if (!cancelled) {
-            setPrayerTimes(data.times);
-            setRawDate(data.rawDate);
-            setLoading(false);
+        try {
+          const { data, timestamp } = JSON.parse(cached);
+          const now = Date.now();
+          // Cache valid until next midnight
+          const midnight = new Date(today + "T23:59:59").getTime();
+          if (now < midnight && now - timestamp < 60 * 60 * 1000) {
+            if (!cancelled) {
+              setPrayerTimes(data.times);
+              setRawDate(data.rawDate);
+              setLoading(false);
+            }
+            return;
           }
-          return;
+        } catch {
+          // Invalid cache, refetch
         }
       }
 
       try {
-        const { times, rawDate } = await fetchPrayerTimesFromAlAdhan();
+        const { times, rawDate } = await fetchPrayerTimesFromSupabase();
         if (cancelled) return;
 
         setPrayerTimes(times);
